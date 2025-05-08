@@ -1,10 +1,11 @@
 import './css/App.css'
+import LogInForm from './pages/LogInForm/index'
 
 function App(){
   return(
-  <>
-    <h1 className="flex justify-center items-center w-[100vw] h-[100vh]">Payroll System</h1>
-  </>
+    <div className='flex justify-center items-center h-screen bg-slate-200'>
+      <LogInForm/>
+    </div>
   )
 }
 
