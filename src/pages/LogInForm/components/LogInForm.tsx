@@ -1,7 +1,7 @@
 // src/components/LogInForm.jsx
 import { useState } from 'react'
 import { authenticateUser } from '../Authentication/Authentication'
-import HomeScreen from '../components/HomeScreen'
+
 import '../css/LogInForm.css'
 
 export default function LogInForm() {
@@ -39,7 +39,7 @@ export default function LogInForm() {
 
   if (isAuthenticated) 
   {
-    return <HomeScreen />;
+    return 'Hi'
   }
   
   return (
