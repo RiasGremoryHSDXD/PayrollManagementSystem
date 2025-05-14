@@ -1,11 +1,11 @@
 // src/lib/auth.js
 import supabase from '../../../config/SupabaseClient'
 
-export async function authenticateUser(email:string, password:string) {
+export async function user_authentication(email:string, password:string) {
   const { data, error } = await supabase
-    .rpc('user_auth', {
-      user_email_input: email,
-      user_password_input: password
+    .rpc('user_authentication', {
+      inputted_username: email,
+      inputted_password: password
     })                            
 
   if (error) {

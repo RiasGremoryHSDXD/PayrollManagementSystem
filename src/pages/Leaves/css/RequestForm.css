@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+
+@layer components {
+
+  .request-form-container {
+    @apply bg-[#95b1f0] w-full flex flex-col justify-center;
+  }
+
+  /* Correct selectors */
+  .request-form-container select,
+  .request-form-container input[type="date"],
+  .request-form-container textarea {
+    @apply w-full bg-[#e0e0e0]
+           border border-[#ccc]
+           rounded-lg p-2 mb-4;
+  }
+}

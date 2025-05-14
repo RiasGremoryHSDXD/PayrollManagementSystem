@@ -1,16 +1,19 @@
 // src/components/LogInForm.jsx
 import { useState } from 'react'
-import { authenticateUser } from '../Authentication/Authentication'
-import HomeScreen from '../components/HomeScreen'
+import { useNavigate } from 'react-router-dom'
+import { user_authentication } from '../Authentication/Authentication'
+import { useAuth } from '../../../auth/AuthContext'
 import '../css/LogInForm.css'
 
 export default function LogInForm() {
   const [userEmail, setUserEmail] = useState('')
   const [userPassword, setUserPassword] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activeButton, setActiveButton] = useState<'employee' | 'hr' | null>(null);
   const [showError, setShowError] = useState(false);
+
+  const navigate = useNavigate()
+  const { login } = useAuth()
 
   const handleSubmit = async (e:any) => 
     {
@@ -22,13 +25,12 @@ export default function LogInForm() {
           return;
         }
 
-        const result = await authenticateUser(userEmail, userPassword)  
+        const result = await user_authentication(userEmail, userPassword)  
 
         if (result > 0) 
         {
-        setIsAuthenticated(true)
-        setErrorMsg('') 
-        setShowError(false)
+          login() 
+          navigate('/employee')
         } 
 
         else 
@@ -36,11 +38,6 @@ export default function LogInForm() {
         setErrorMsg('Invalid credentials. Please check your email and password')                            
         }
     }
-
-  if (isAuthenticated) 
-  {
-    return <HomeScreen />;
-  }
   
   return (
     <form 

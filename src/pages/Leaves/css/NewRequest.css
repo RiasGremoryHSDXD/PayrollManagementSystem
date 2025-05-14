@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+@layer components 
+{
+    .new-request-container {
+        @apply w-[10vw] h-[5vh]
+    }
+
+    .new-request-container button{
+        @apply bg-[#2763e8] cursor-pointer text-white  py-2 px-4 rounded
+    }
+}
