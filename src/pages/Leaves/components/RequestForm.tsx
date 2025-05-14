@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import '../css/RequestForm.css'
 import ErrorToast from './ErrorToast'
+import { useAuth } from '../../../auth/AuthContext'
+import { employee_details } from '../EmployeeDetail/EmployeeDetails'
+import { insertLeaveWithDetails } from '../../Leaves/AddLeaveDB/AddLeaveDB'
 
 export default function RequestForm() {
     const [formData, setFormData] = useState({
@@ -14,15 +17,34 @@ export default function RequestForm() {
     const [startDateError, setStartDateError] = useState<boolean>(false);
     const [endDateError, setEndDateError] = useState<boolean>(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState<boolean>(false);
+    const { userEmail, userPassword } = useAuth()
+
+    const displayUserInfo = async () => {
+        const result = await employee_details(userEmail, userPassword)
+        console.log("Employee Name", result)
+    }
+    
+    displayUserInfo()
+    console.log("Employee Dashboard")
+    console.log("User Email: ", userEmail)
+    console.log("User Password: ", userPassword)
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
         setFormData((prevData) => ({...prevData, [name]: value}));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const leaveTypeMap: Record<string, number> = {
+    'Vacation':   1,
+    'Sick Leave': 2,
+    'Personal':   3,
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
+        const computedDays = getDaysBetween();
+
         // Reset error states
         setStartDateError(false);
         setEndDateError(false);
@@ -37,11 +59,27 @@ export default function RequestForm() {
             return;
         }
         
-        // Show success message instead of alert
         setShowSuccessMessage(true);
-        
-        // Hide the form after successful submission (optional)
-        // setIsVisible(false);
+        const leaveTypeId = leaveTypeMap[formData.leaveType] ?? 0
+        const result = await employee_details(userEmail, userPassword)
+        try{
+            await insertLeaveWithDetails(
+                formData.startDate,
+                formData.endDate,
+                computedDays,
+                formData.reason,
+                'Pending',
+                result[0].managerid,
+                null,
+                null,
+                leaveTypeId,
+                result[0].employeescheduled,
+            )
+        }catch (error) {
+            console.error('Error inserting leave details:', error);
+        }
+        console.log('totalDayLeave: ', computedDays)
+
     };
 
     const handleClose = () => {
@@ -76,6 +114,21 @@ export default function RequestForm() {
 
     if (!isVisible) {
         return null; // Don't render anything if the form is closed
+    }
+
+    const getDaysBetween = () => {
+        const start = new Date(formData.startDate)
+        const end = new Date(formData.endDate)
+        start.setHours(0, 0, 0, 0)
+        end.setHours(0, 0, 0, 0)
+
+        const startMs  = start.getTime()
+        const endMs = end.getTime()
+
+        const diffMs = endMs - startMs
+        const msPerday = 1000 * 60 * 60 * 24
+        const days     = Math.floor(diffMs / msPerday)
+        return days + 1
     }
 
     return (

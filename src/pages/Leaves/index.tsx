@@ -1,9 +1,9 @@
 import './css/Leave.css'
 import NewRequest from "./components/NewRequest"
 import Leave from "./components/LeaveCard"
-import RequestHistory from "./components/RequestHistory"
 
 export default function index() {
+
   return (
     <div className='flex flex-col items-end gap-4'>
       <NewRequest />
