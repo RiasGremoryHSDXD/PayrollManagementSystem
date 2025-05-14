@@ -24,11 +24,12 @@ function App(){
       } />
 
       {/*Attendance Form*/}
-      {/*Log In Form Componets*/}
-      <Route path="/" element={
-        <div className="flex justify-center items-center h-screen bg-slate-200">
-          <AttendanceForm />
-        </div>        
+      <Route path="/Attendance" element={
+        <ProtectedRoute>
+          <div className="flex justify-center items-center h-screen bg-slate-200">
+            <AttendanceForm />
+          </div>      
+        </ProtectedRoute>
       } />
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -29,7 +29,7 @@ export default function LogInForm() {
 
         if (result > 0) 
         {
-          login() 
+          login(userEmail, userPassword) 
           navigate('/employee')
         } 
 
