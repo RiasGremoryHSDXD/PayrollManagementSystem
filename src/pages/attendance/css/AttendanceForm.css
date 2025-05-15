@@ -5,6 +5,8 @@
     @apply flex w-full flex-row gap-3 h-screen;
   }
 
+
+
   aside {
     @apply w-[15.5%] flex flex-col bg-white;
   }

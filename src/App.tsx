@@ -1,10 +1,10 @@
 import "./css/App.css";
 import LogInForm from "./pages/LogInForm/index";
-import EmployeeLogIn from "./pages/DashBoard/Employee/index";
+import DashBoard from "./pages/attendance/components/AttendanceForm";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "../src/auth/ProtectedRoute";
 import AttendanceForm from "./pages/attendance/components/AttendanceForm";
-
+import LeaveComponets from "./pages/Leaves/index";
 function App() {
   return (
     <Routes>
@@ -20,10 +20,10 @@ function App() {
 
       {/*Employee Dashboard*/}
       <Route
-        path="/employee"
+        path="/dashboard"
         element={
           <ProtectedRoute>
-            <EmployeeLogIn />
+            <DashBoard />
           </ProtectedRoute>
         }
       />
@@ -36,6 +36,15 @@ function App() {
           </div>      
         </ProtectedRoute>
       } />
+
+      {/*Leave Form*/}
+      <Route path="/leave-request" element={
+        <ProtectedRoute>
+            <LeaveComponets />
+        </ProtectedRoute>
+      } />
+
+      {/*Payroll Form*/}
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

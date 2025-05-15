@@ -30,7 +30,7 @@ export default function LogInForm() {
         if (result > 0) 
         {
           login(userEmail, userPassword) 
-          navigate('/employee')
+          navigate('/dashboard')
         } 
 
         else 
