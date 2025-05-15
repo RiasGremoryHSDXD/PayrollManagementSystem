@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login, 
     logout,
     userEmail,
-    userPassword
+    userPassword,
   }
   return (
     <AuthContext.Provider value={value}>

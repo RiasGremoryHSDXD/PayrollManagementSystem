@@ -7,7 +7,7 @@ import { AuthProvider } from "./auth/AuthContext";
 createRoot(document.getElementById("root")!).render(
   <HashRouter>
     <AuthProvider>
-      <App />
+        <App />
     </AuthProvider>
   </HashRouter>
 );
