@@ -5,8 +5,6 @@
     @apply flex w-full flex-row gap-3 h-screen;
   }
 
-
-
   aside {
     @apply w-[15.5%] flex flex-col bg-white;
   }
@@ -14,6 +12,7 @@
   aside h1 {
     @apply px-5 py-7 text-left font-bold text-blue-600 text-xl justify-center border-b border-gray-300;
   }
+
   nav {
     @apply flex flex-col h-screen text-base justify-between px-4 py-8;
   }
@@ -40,22 +39,6 @@
 
   .right-area {
     @apply flex flex-col h-full w-full;
-  }
-
-  .header-area {
-    @apply flex justify-between border-b border-gray-300 items-center px-5 py-1 h-[10%] bg-white;
-  }
-
-  .dashboard h1 {
-    @apply font-semibold text-xl;
-  }
-
-  .dashboard p {
-    @apply text-gray-600;
-  }
-
-  .profile {
-    @apply flex flex-row items-center justify-center;
   }
 
   .main-area {
@@ -118,9 +101,11 @@
   .clock-label {
     @apply text-sm;
   }
+
   .clock-time-display {
     @apply text-base text-blue-700 font-semibold;
   }
+
   .attendance-btn {
     @apply flex w-full items-center justify-center gap-2 rounded-xl py-2.5 px-4 mt-6 select-none;
   }
@@ -142,6 +127,6 @@
   }
 
   .table-history td {
-    @apply border-b border-gray-300  px-3 py-4 font-normal text-gray-800 text-sm;
+    @apply border-b border-gray-300 px-3 py-4 font-normal text-gray-800 text-sm;
   }
 }

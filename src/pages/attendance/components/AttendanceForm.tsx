@@ -91,64 +91,7 @@ export default function AttendanceForm() {
 
   return (
     <div className="main-container">
-      {/* Navigation and Aside Content */}
-      <aside>
-        <h1 className="heading">EmployeeHub</h1>
-        <nav>
-          <button
-            className="btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
-            onClick={() => navigate("/overview")}
-          >
-            Overview
-          </button>
-
-          <button
-            className="btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
-            onClick={() => navigate("/attendance")}
-          >
-            Attendance
-          </button>
-
-          <button 
-            className="btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
-            onClick={() => navigate("/payroll")}
-          >
-            Payroll
-          </button>
-
-          <button
-            className="btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
-            onClick={() => navigate("/leave-request")}
-          >
-            Leave Request
-          </button>
-          <button className="btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500">
-            Log Out
-          </button>
-        </nav>
-      </aside>
-
       <div className="right-area">
-        <header className="header-area">
-          <div className="dashboard">
-            <h1>Dashboard</h1>
-            <p>{formattedDate}</p>
-          </div>
-          <div className="profile">
-            <img
-              src="public/person_icon.svg"
-              alt="person_icon"
-              className="w-[20px] h-[20px] m-5 hover:to-blue-700"
-            />
-            <div className="profile-name">
-              <p className=" font-medium text-gray-800 text-sm">
-                {employeeName}
-              </p>
-              <p>Employee Sche ID: {employeeScheduleID}</p>
-              <p className="text-gray-600 text-sm">Software Engineer</p>
-            </div>
-          </div>
-        </header>
 
         {/* Main content */}
         <main className="main-area">

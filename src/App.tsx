@@ -1,6 +1,6 @@
 import "./css/App.css";
 import LogInForm from "./pages/LogInForm/index";
-import DashBoard from "./pages/attendance/components/AttendanceForm";
+import DashBoardEmployee from "./pages/Dashboard/Employee";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "../src/auth/ProtectedRoute";
 import AttendanceForm from "./pages/attendance/components/AttendanceForm";
@@ -20,10 +20,10 @@ function App() {
 
       {/*Employee Dashboard*/}
       <Route
-        path="/dashboard"
+        path="/dashboardEmployee"
         element={
           <ProtectedRoute>
-            <DashBoard />
+            <DashBoardEmployee />
           </ProtectedRoute>
         }
       />
