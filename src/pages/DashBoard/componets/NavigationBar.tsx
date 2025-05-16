@@ -1,11 +1,23 @@
 import '../css/NavigationBar.css'
+import { FC } from 'react'
 
-export default function AsideNav() {
+export type View = 'overview' | 'attendance' | 'payroll' | 'leave'
+
+interface AsideNavProp{
+  activeView: View
+  onChangeView: (View: View) => void
+}
+
+
+const AsideNav: FC<AsideNavProp> = ({activeView, onChangeView}) => {
   
   return (
     <nav>
         <div>
-            <button>
+            <button
+              className={activeView === 'overview' ? 'active' : ''}
+              onClick={() => onChangeView('overview')}
+              >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -22,7 +34,10 @@ export default function AsideNav() {
               Overview
             </button>
 
-            <button>
+            <button
+              className={activeView === 'attendance' ? 'active' : ''}
+              onClick={() => onChangeView('attendance')}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -39,7 +54,10 @@ export default function AsideNav() {
               Attendance
             </button>
 
-            <button>
+            <button
+              className={activeView === 'payroll' ? 'active' : ''}
+              onClick={() => onChangeView('payroll')}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -56,7 +74,10 @@ export default function AsideNav() {
               Payroll
             </button>
 
-            <button>
+            <button
+              className={activeView === 'leave' ? 'active' : ''}
+              onClick={() => onChangeView('leave')}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -95,3 +116,5 @@ export default function AsideNav() {
         </nav>
     );
 }
+
+export default AsideNav

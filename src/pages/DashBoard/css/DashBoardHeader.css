@@ -3,7 +3,7 @@
 @layer components {
   /* Header wrapper */
   .header-area {
-    @apply flex justify-between border-b border-gray-300 
+    @apply flex w-[85vw] justify-between border-b border-gray-300 
            items-center px-5 py-4 bg-white;
   }
 

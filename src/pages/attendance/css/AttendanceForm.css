@@ -2,32 +2,9 @@
 
 @layer components {
   .main-container {
-    @apply flex w-full flex-row gap-3 h-screen;
+    @apply flex flex-row gap-3 h-screen;
   }
 
-  aside {
-    @apply w-[15.5%] flex flex-col bg-white;
-  }
-
-  aside h1 {
-    @apply px-5 py-7 text-left font-bold text-blue-600 text-xl justify-center border-b border-gray-300;
-  }
-
-  nav {
-    @apply flex flex-col h-screen text-base justify-between px-4 py-8;
-  }
-
-  nav svg {
-    @apply w-[25px] h-[25px];
-  }
-
-  a {
-    @apply flex flex-row items-center gap-4 py-2 px-3 mb-5 rounded-xl text-gray-600;
-  }
-
-  a:hover {
-    @apply bg-gray-100 text-blue-500;
-  }
 
   .logOut-btn {
     @apply flex flex-row gap-4 items-center rounded-xl py-3 px-2 w-full;

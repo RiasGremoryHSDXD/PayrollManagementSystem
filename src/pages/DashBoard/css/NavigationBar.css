@@ -2,7 +2,7 @@
 
 @layer components {
     nav {
-        @apply flex flex-col h-screen text-base justify-between px-4 py-8;
+        @apply flex w-[15vw] flex-col h-screen text-base justify-between px-4 py-8;
     }
 
     button svg {

@@ -1,41 +1,16 @@
 import { useEffect, useState } from "react";
 import "../css/AttendanceForm.css";
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from "../../../auth/AuthContext";
-import { employee_details } from '../../Leaves/EmployeeDetail/EmployeeDetails'
 
 export default function AttendanceForm() {
   const [time, setTime] = useState<Date>(new Date());
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-  const [employeeName, setEmployeeName] = useState<string>("");
-  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0)
 
-  const { userEmail, userPassword } = useAuth();
-  
-
-  const navigate = useNavigate();
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    getEmployeeName();
-  }, []);
-
-  const getEmployeeName = async () => {
-    try {
-      const result = await employee_details(userEmail, userPassword);
-      if (result && result.length > 0) {
-        setEmployeeName(result[0].employeename);
-        setEmployeeScheduleID(result[0].employeescheduled)
-      }
-    } catch (error) {
-      console.error("Error fetching employee details:", error);
-    }
-  }
 
   const handleClockAction = () => {
     const now = new Date();
