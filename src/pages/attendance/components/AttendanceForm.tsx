@@ -9,7 +9,8 @@ export default function AttendanceForm() {
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-  const [employeeName, setEmployeeName] = useState<string>("John Doe");
+  const [employeeName, setEmployeeName] = useState<string>("");
+  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0)
 
   const { userEmail, userPassword } = useAuth();
   
@@ -29,6 +30,7 @@ export default function AttendanceForm() {
       const result = await employee_details(userEmail, userPassword);
       if (result && result.length > 0) {
         setEmployeeName(result[0].employeename);
+        setEmployeeScheduleID(result[0].employeescheduled)
       }
     } catch (error) {
       console.error("Error fetching employee details:", error);
@@ -142,6 +144,7 @@ export default function AttendanceForm() {
               <p className=" font-medium text-gray-800 text-sm">
                 {employeeName}
               </p>
+              <p>Employee Sche ID: {employeeScheduleID}</p>
               <p className="text-gray-600 text-sm">Software Engineer</p>
             </div>
           </div>
