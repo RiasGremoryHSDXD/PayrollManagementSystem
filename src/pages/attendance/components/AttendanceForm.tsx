@@ -46,7 +46,7 @@ export default function AttendanceForm() {
       // Clocking in
       setClockInTime(now);
       setClockOutTime(null);
-    }
+    }                             
     setIsClockedIn(!isClockedIn);
   };
 

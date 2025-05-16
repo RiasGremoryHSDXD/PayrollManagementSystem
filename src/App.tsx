@@ -5,6 +5,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "../src/auth/ProtectedRoute";
 import AttendanceForm from "./pages/attendance/components/AttendanceForm";
 import LeaveComponets from "./pages/Leaves/index";
+import Payroll from "./pages/Payroll/components/payroll";
 function App() {
   return (
     <Routes>
@@ -45,10 +46,20 @@ function App() {
       } />
 
       {/*Payroll Form*/}
-
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route
+        path="/payroll"
+        element={
+          <ProtectedRoute>
+            <div className="flex justify-center items-center h-screen bg-slate-200">
+              <Payroll />
+            </div>
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
-}
+} 
+
+
 
 export default App;
