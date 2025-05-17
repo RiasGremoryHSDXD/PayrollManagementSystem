@@ -31,11 +31,14 @@ export default function AttendanceForm() {
       setShiftDate(shiftTime[0].shiftdate)
       setShiftStart(shiftTime[0].starttime)
       setshiftEnd(shiftTime[0].endtime)
+  
     
       console.log("Employee Name", result)
   }
+
+  useEffect(() => {displayUserInfo()}, [])
   
-  displayUserInfo()
+
   const handleClockAction = async () => {
     const now = new Date();
     const today = now.toISOString().split("T")[0]; // YYYY-MM-DD

@@ -1,6 +1,6 @@
 import '../css/NavigationBar.css'
 import { FC } from 'react'
-
+import { useNavigate } from 'react-router-dom'
 export type View = 'overview' | 'attendance' | 'payroll' | 'leave'
 
 interface AsideNavProp{
@@ -11,6 +11,13 @@ interface AsideNavProp{
 
 const AsideNav: FC<AsideNavProp> = ({activeView, onChangeView}) => {
   
+  const navigate = useNavigate()
+
+  const handleLogOut = () => {
+    localStorage.clear()
+    navigate('/')
+  }
+
   return (
     <nav>
         <div>
@@ -96,7 +103,10 @@ const AsideNav: FC<AsideNavProp> = ({activeView, onChangeView}) => {
           </div>
 
           <div>
-            <button className="logOut-btn">
+            <button 
+              className="logOut-btn"
+              onClick={handleLogOut}
+              >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
