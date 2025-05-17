@@ -2,9 +2,8 @@
 
 @layer components {
   .main-container {
-    @apply flex flex-row gap-3 h-screen;
+    @apply flex flex-row gap-3 h-full;
   }
-
 
   .logOut-btn {
     @apply px-4 py-5 w-full gap-4 mb-5 border-t border-gray-300 text-gray-600;
@@ -32,10 +31,6 @@
 
   .main-area {
     @apply h-full bg-gray-50 p-6 w-full;
-  }
-
-  .main-area h1 {
-    @apply font-bold text-2xl mb-7;
   }
 
   .attendance-UI-display {
