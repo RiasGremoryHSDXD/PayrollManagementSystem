@@ -1,19 +1,31 @@
 // src/components/LogInForm.jsx
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { user_authentication } from '../Authentication/Authentication'
 import { useAuth } from '../../../auth/AuthContext'
 import '../css/LogInForm.css'
+import { EmployeeDetails } from '../EmployeeDetails/EmployeeDetails'
 
 export default function LogInForm() {
   const [userEmail, setUserEmail] = useState('')
   const [userPassword, setUserPassword] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
-  const [activeButton, setActiveButton] = useState<'employee' | 'hr' | null>(null);
   const [showError, setShowError] = useState(false);
 
   const navigate = useNavigate()
   const { login } = useAuth()
+
+  useEffect(() => {
+    const storedUserName = localStorage.getItem('username')
+    const storedPassword = localStorage.getItem('password')
+
+    if(storedUserName && storedPassword)
+      {
+        login(storedUserName, storedPassword)
+        EmployeeDetails().catch(console.error)
+        navigate('/dashboardEmployee')
+      }
+  }, [])
 
   const handleSubmit = async (e:any) => 
     {
@@ -24,12 +36,14 @@ export default function LogInForm() {
           setErrorMsg('Please fill in the field');
           return;
         }
-
         const result = await user_authentication(userEmail, userPassword)  
 
         if (result > 0) 
         {
           login(userEmail, userPassword) 
+          localStorage.setItem('username', userEmail)
+          localStorage.setItem('password', userPassword)
+          EmployeeDetails().catch(console.error)
           navigate('/dashboardEmployee')
         } 
 
@@ -87,39 +101,6 @@ export default function LogInForm() {
               </div>
             </div>
           )}      
-
-        <div className="button-container">
-          <button 
-            type="button"
-            onClick={() => {
-              setActiveButton('employee'); 
-              setShowError(false)}
-            }
-                className={`w-full px-4 py-2 sm:py-3 text-sm md:text-base rounded transition-colors duration-300  hover:cursor-pointer ${
-                  activeButton === 'employee'  
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-transparent text-black hover:bg-gray-200'
-                }`}
-          >
-            Employee
-          </button>
-          <button 
-            type="button"
-            onClick={() => {
-              setActiveButton('hr'); 
-              setShowError(false)
-              setErrorMsg('');
-              }
-            }
-            className={`w-full px-4 py-2 sm:py-3 text-sm md:text-base rounded transition-colors duration-300  hover:cursor-pointer ${
-              activeButton === 'hr' 
-                ? 'bg-green-600 text-white' 
-                : 'bg-transparent text-black hover:bg-gray-200'
-            }`}
-          >
-            HR corporate
-          </button>
-        </div>
       </div>
 
       <div className="input-container">
@@ -144,10 +125,6 @@ export default function LogInForm() {
       </div>
 
       <div className="footer-container">
-        <div className="remember-me">
-          <input id="remember" type="checkbox" className="h-4 w-4  text-blue-600" />
-          <label htmlFor="remember" className="text-sm md:text-base text-gray-700">Remember me</label>
-        </div>
         <button type="submit"
           onClick={() => setErrorMsg('')}  
         >

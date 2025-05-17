@@ -17,7 +17,12 @@ export default function index() {
   const [personalTotalLeave, setPersonalTotalLeave] = useState<number>(0)
   const [employeeScheID, setEmployeeID] = useState<number | null>(null)
   const { userEmail, userPassword } = useAuth()
+  
 
+  useEffect(() => {
+    console.log(localStorage.getItem('username'))
+    console.log(localStorage.getItem('password'))
+  })
 
   useEffect(() => {
     employee_details(userEmail, userPassword)
