@@ -7,11 +7,23 @@
 
 
   .logOut-btn {
-    @apply flex flex-row gap-4 items-center rounded-xl py-3 px-2 w-full;
+    @apply px-4 py-5 w-full gap-4 mb-5 border-t border-gray-300 text-gray-600;
+  }
+
+  .logOut-btn button {
+    @apply flex flex-row w-full gap-4 py-2 px-3;
   }
 
   .logOut-btn:hover {
-    @apply text-red-600;
+    @apply text-red-500 cursor-pointer;
+  }
+
+  nav button {
+    @apply flex flex-row items-center w-full gap-4 py-2 px-3 mb-5 rounded-xl text-gray-600;
+  }
+
+  nav button:hover {
+    @apply bg-gray-100 text-blue-500;
   }
 
   .right-area {
@@ -100,7 +112,7 @@
   }
 
   .table-history th {
-    @apply w-1/6 border-b border-gray-300 px-3 py-4 font-medium text-gray-500 text-xs;
+    @apply w-1/7 border-b border-gray-300 px-3 py-4 font-medium text-gray-500 text-xs;
   }
 
   .table-history td {

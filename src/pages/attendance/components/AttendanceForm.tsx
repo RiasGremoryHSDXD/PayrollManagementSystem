@@ -3,6 +3,7 @@ import "../css/AttendanceForm.css";
 import { useAuth } from "../../../auth/AuthContext";
 import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails"
 import { getShiftRotations } from '../components/AttedanceDatabase'
+import supabase from "../../../config/SupabaseClient";
 
 export default function AttendanceForm() {
   const [time, setTime] = useState<Date>(new Date());
@@ -36,17 +37,43 @@ export default function AttendanceForm() {
   }
   
   displayUserInfo()
-  const handleClockAction = () => {
+  const handleClockAction = async () => {
     const now = new Date();
-    if (isClockedIn) {
-      // Clocking out
-      setClockOutTime(now);
+    const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    if (!isClockedIn) {
+      // Clocking in → INSERT
+      const { error } = await supabase.from("attendance").insert([
+        {
+          employeescheduled: employeeScheduleID,
+          attendancedate: today,
+          timein: now,
+          timeout: null,
+        },
+      ]);
+
+      if (error) {
+        console.error("Clock-in error:", error.message);
+      } else {
+        setClockInTime(now);
+        setClockOutTime(null);
+        setIsClockedIn(true);
+      }
     } else {
-      // Clocking in
-      setClockInTime(now);
-      setClockOutTime(null);
-    }                             
-    setIsClockedIn(!isClockedIn);
+      // Clocking out → UPDATE
+      const { error } = await supabase
+        .from("attendance")
+        .update({ timeout: now })
+        .eq("employeescheduled", employeeScheduleID)
+        .eq("attendancedate", today);
+
+      if (error) {
+        console.error("Clock-out error:", error.message);
+      } else {
+        setClockOutTime(now);
+        setIsClockedIn(false);
+      }
+    }
   };
 
   // Formatted time display
@@ -69,24 +96,36 @@ export default function AttendanceForm() {
     weekday: "short",
   });
 
-  {
-    /*Total hours in format ( z) */
-  }
   const TotalHours = () => {
     if (!clockInTime || !clockOutTime) return "--:--:--";
 
-    const diffInMs = Math.max(
-      0,
-      clockOutTime.getTime() - clockInTime.getTime()
-    );
-    const diffInHours = diffInMs / (1000 * 60 * 60);
-    const diffInMins = Math.floor(diffInMs / (1000 * 60));
-    return diffInHours <= 0 ? "1 min" : `${diffInMins} min`;
+    const diffInMs = clockOutTime.getTime() - clockInTime.getTime();
+    const totalSeconds = Math.floor(diffInMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    return `${hours} hrs ${minutes} mins`;
   };
 
-  {
-    /*Total hours in format ( 8 hrs 30 mins) */
-  }
+  const CalculateOvertime = (
+    clockInTime: Date | null,
+    clockOutTime: Date | null
+  ): string => {
+    if (!clockInTime || !clockOutTime) return "--:--:--";
+
+    const diffInMs = clockOutTime.getTime() - clockInTime.getTime();
+    const totalMinutes = Math.floor(diffInMs / (1000 * 60));
+
+    const regularMinutes = 8 * 60;
+    const overtimeMinutes = totalMinutes - regularMinutes;
+
+    if (overtimeMinutes <= 0) return "N/A";
+
+    const overtimeHours = Math.floor(overtimeMinutes / 60);
+    const overtimeMins = overtimeMinutes % 60;
+
+    return `${overtimeHours} hrs ${overtimeMins} min)`;
+  };
 
   return (
     <div className="main-container">
@@ -216,6 +255,7 @@ export default function AttendanceForm() {
                       <th>CLOCK IN</th>
                       <th>CLOCK OUT</th>
                       <th>TOTAL HOURS</th>
+                      <th>OT</th>
                       <th>STATUS</th>
                     </tr>
                   </thead>
@@ -240,6 +280,9 @@ export default function AttendanceForm() {
                           : "--:--:--"}
                       </td>
                       <td>{TotalHours() || "--"}</td>
+                      <td>
+                        {CalculateOvertime(clockInTime, clockOutTime) || "--"}
+                      </td>
                       <td>--:--:--</td>
                     </tr>
                   </tbody>
