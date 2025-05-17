@@ -1,6 +1,7 @@
 import AsideNavProp, { View } from '../componets/NavigationBar'
 import DashBoardHeader from '../componets/DashBoardHeader'
 import AttendanceForm from '../../attendance/components/AttendanceForm'
+import PayrollPage from '../../Payroll/components/payroll'
 import LeaveForm from '../../Leaves/index'
 import { useState } from 'react'
 
@@ -16,7 +17,7 @@ export default function index() {
       case 'attendance':
           return <AttendanceForm/>
       case 'payroll':
-          return <h1>Payroll Page</h1> 
+          return <PayrollPage/>
       case 'leave':
           return <LeaveForm/>
       default:
