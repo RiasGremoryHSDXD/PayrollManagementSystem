@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import "../css/AttendanceForm.css";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
 import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails";
+import { getShiftRotations } from "../components/AttedanceDatabase";
 import supabase from "../../../config/SupabaseClient";
 
 export default function AttendanceForm() {
@@ -11,13 +11,32 @@ export default function AttendanceForm() {
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
   const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0);
+  const [employeeName, setEmployeeName] = useState<string>("");
+  const [shiftDate, setShiftDate] = useState<string>("");
+  const [shiftStart, setShiftStart] = useState<number>(0);
+  const [shiftEnd, setshiftEnd] = useState<number>(0);
+  const { userEmail, userPassword } = useAuth();
 
-  const navigate = useNavigate();
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
+  const displayUserInfo = async () => {
+    const result = await employee_details(userEmail, userPassword);
+    setEmployeeScheduleID(result[0].employeescheduled);
+
+    const shiftTime = await getShiftRotations(result[0].employeename);
+
+    console.log("ShiftTime", shiftTime);
+    setShiftDate(shiftTime[0].shiftdate);
+    setShiftStart(shiftTime[0].starttime);
+    setshiftEnd(shiftTime[0].endtime);
+
+    console.log("Employee Name", result);
+  };
+
+  displayUserInfo();
   const handleClockAction = async () => {
     const now = new Date();
     const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
@@ -113,10 +132,11 @@ export default function AttendanceForm() {
       <div className="right-area">
         {/* Main content */}
         <main className="main-area">
-          <div className="flex justify-between px-4 items-center">
-            <h1>Attendance</h1>
-            <p>Employee Sche ID: {employeeScheduleID}</p>
-          </div>
+          <h1>Attendance</h1>
+          <h1>Employee Sche ID {employeeScheduleID}</h1>
+          <h1>Shift Date: {shiftDate}</h1>
+          <h1>Shift Start: {shiftStart}</h1>
+          <h1>Shift End: {shiftEnd}</h1>
           <div className="attendance-UI-display">
             <div className="attendance-function">
               <div className="time-display">
