@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import "../css/AttendanceForm.css";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
-import { employee_details } from '../../Leaves/EmployeeDetail/EmployeeDetails'
+import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails";
+import supabase from "../../../config/SupabaseClient";
 
 export default function AttendanceForm() {
   const [time, setTime] = useState<Date>(new Date());
@@ -10,10 +11,8 @@ export default function AttendanceForm() {
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
   const [employeeName, setEmployeeName] = useState<string>("");
-  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0)
-
+  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0);
   const { userEmail, userPassword } = useAuth();
-  
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -30,24 +29,50 @@ export default function AttendanceForm() {
       const result = await employee_details(userEmail, userPassword);
       if (result && result.length > 0) {
         setEmployeeName(result[0].employeename);
-        setEmployeeScheduleID(result[0].employeescheduled)
+        setEmployeeScheduleID(result[0].employeescheduled);
       }
     } catch (error) {
       console.error("Error fetching employee details:", error);
     }
-  }
+  };
 
-  const handleClockAction = () => {
+  const handleClockAction = async () => {
     const now = new Date();
-    if (isClockedIn) {
-      // Clocking out
-      setClockOutTime(now);
+    const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    if (!isClockedIn) {
+      // Clocking in → INSERT
+      const { error } = await supabase.from("attendance").insert([
+        {
+          employeescheduled: employeeScheduleID,
+          attendancedate: today,
+          timein: now,
+          timeout: null,
+        },
+      ]);
+
+      if (error) {
+        console.error("Clock-in error:", error.message);
+      } else {
+        setClockInTime(now);
+        setClockOutTime(null);
+        setIsClockedIn(true);
+      }
     } else {
-      // Clocking in
-      setClockInTime(now);
-      setClockOutTime(null);
+      // Clocking out → UPDATE
+      const { error } = await supabase
+        .from("attendance")
+        .update({ timeout: now })
+        .eq("employeescheduled", employeeScheduleID)
+        .eq("attendancedate", today);
+
+      if (error) {
+        console.error("Clock-out error:", error.message);
+      } else {
+        setClockOutTime(now);
+        setIsClockedIn(false);
+      }
     }
-    setIsClockedIn(!isClockedIn);
   };
 
   // Formatted time display
@@ -70,24 +95,36 @@ export default function AttendanceForm() {
     weekday: "short",
   });
 
-  {
-    /*Total hours in format ( z) */
-  }
   const TotalHours = () => {
     if (!clockInTime || !clockOutTime) return "--:--:--";
 
-    const diffInMs = Math.max(
-      0,
-      clockOutTime.getTime() - clockInTime.getTime()
-    );
-    const diffInHours = diffInMs / (1000 * 60 * 60);
-    const diffInMins = Math.floor(diffInMs / (1000 * 60));
-    return diffInHours <= 0 ? "1 min" : `${diffInMins} min`;
+    const diffInMs = clockOutTime.getTime() - clockInTime.getTime();
+    const totalSeconds = Math.floor(diffInMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    return `${hours} hrs ${minutes} mins`;
   };
 
-  {
-    /*Total hours in format ( 8 hrs 30 mins) */
-  }
+  const CalculateOvertime = (
+    clockInTime: Date | null,
+    clockOutTime: Date | null
+  ): string => {
+    if (!clockInTime || !clockOutTime) return "--:--:--";
+
+    const diffInMs = clockOutTime.getTime() - clockInTime.getTime();
+    const totalMinutes = Math.floor(diffInMs / (1000 * 60));
+
+    const regularMinutes = 8 * 60;
+    const overtimeMinutes = totalMinutes - regularMinutes;
+
+    if (overtimeMinutes <= 0) return "N/A";
+
+    const overtimeHours = Math.floor(overtimeMinutes / 60);
+    const overtimeMins = overtimeMinutes % 60;
+
+    return `${overtimeHours} hrs ${overtimeMins} min)`;
+  };
 
   return (
     <div className="main-container">
@@ -95,37 +132,94 @@ export default function AttendanceForm() {
       <aside>
         <h1 className="heading">EmployeeHub</h1>
         <nav>
-          <button
-            className="btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
-            onClick={() => navigate("/overview")}
-          >
-            Overview
-          </button>
+          <div>
+            <button onClick={() => navigate("/overview")}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"
+                />
+              </svg>
+              Overview
+            </button>
 
-          <button
-            className="btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
-            onClick={() => navigate("/attendance")}
-          >
-            Attendance
-          </button>
+            <button onClick={() => navigate("/attendance")}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+              Attendance
+            </button>
 
-          <button 
-            className="btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
-            onClick={() => navigate("/payroll")}
-          >
-            Payroll
-          </button>
+            <button onClick={() => navigate("/payroll")}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
+                />
+              </svg>
+              Payroll
+            </button>
 
-          <button
-            className="btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
-            onClick={() => navigate("/leave-request")}
-          >
-            Leave Request
-          </button>
-          <button className="btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500">
+            <button onClick={() => navigate("/leave-request")}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6.75 2.994v2.25m10.5-2.25v2.25m-14.252 13.5V7.491a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v11.251m-18 0a2.25 2.25 0 0 0 2.25 2.25h13.5a2.25 2.25 0 0 0 2.25-2.25m-18 0v-7.5a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v7.5m-6.75-6h2.25m-9 2.25h4.5m.002-2.25h.005v.006H12v-.006Zm-.001 4.5h.006v.006h-.006v-.005Zm-2.25.001h.005v.006H9.75v-.006Zm-2.25 0h.005v.005h-.006v-.005Zm6.75-2.247h.005v.005h-.005v-.005Zm0 2.247h.006v.006h-.006v-.006Zm2.25-2.248h.006V15H16.5v-.005Z"
+                />
+              </svg>
+              Leave Request
+            </button>
+          </div>
+        </nav>
+        <div className="logOut-btn">
+          <button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+              />
+            </svg>
             Log Out
           </button>
-        </nav>
+        </div>
       </aside>
 
       <div className="right-area">
@@ -144,7 +238,7 @@ export default function AttendanceForm() {
               <p className=" font-medium text-gray-800 text-sm">
                 {employeeName}
               </p>
-              <p>Employee Sche ID: {employeeScheduleID}</p>
+
               <p className="text-gray-600 text-sm">Software Engineer</p>
             </div>
           </div>
@@ -152,7 +246,10 @@ export default function AttendanceForm() {
 
         {/* Main content */}
         <main className="main-area">
-          <h1>Attendance</h1>
+          <div className="flex justify-between px-4 items-center">
+            <h1>Attendance</h1>
+            <p>Employee Sche ID: {employeeScheduleID}</p>
+          </div>
           <div className="attendance-UI-display">
             <div className="attendance-function">
               <div className="time-display">
@@ -270,6 +367,7 @@ export default function AttendanceForm() {
                       <th>CLOCK IN</th>
                       <th>CLOCK OUT</th>
                       <th>TOTAL HOURS</th>
+                      <th>OT</th>
                       <th>STATUS</th>
                     </tr>
                   </thead>
@@ -294,6 +392,9 @@ export default function AttendanceForm() {
                           : "--:--:--"}
                       </td>
                       <td>{TotalHours() || "--"}</td>
+                      <td>
+                        {CalculateOvertime(clockInTime, clockOutTime) || "--"}
+                      </td>
                       <td>--:--:--</td>
                     </tr>
                   </tbody>
