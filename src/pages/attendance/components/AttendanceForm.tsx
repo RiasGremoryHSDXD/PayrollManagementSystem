@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import "../css/AttendanceForm.css";
 import { useAuth } from "../../../auth/AuthContext";
-import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails"
-import { getShiftRotations } from '../components/AttedanceDatabase'
+import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails";
+import { getShiftRotations } from "../components/AttedanceDatabase";
 import supabase from "../../../config/SupabaseClient";
 
 export default function AttendanceForm() {
@@ -10,11 +10,12 @@ export default function AttendanceForm() {
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0)
-  const [shiftDate, setShiftDate] = useState<string>("")
-  const [shiftStart, setShiftStart] = useState<number>(0)
-  const [shiftEnd, setshiftEnd] = useState<number>(0)
-  const { userEmail, userPassword } = useAuth()
+  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0);
+  const [employeeName, setEmployeeName] = useState<string>("");
+  const [shiftDate, setShiftDate] = useState<string>("");
+  const [shiftStart, setShiftStart] = useState<number>(0);
+  const [shiftEnd, setshiftEnd] = useState<number>(0);
+  const { userEmail, userPassword } = useAuth();
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -22,23 +23,20 @@ export default function AttendanceForm() {
   }, []);
 
   const displayUserInfo = async () => {
-      const result = await employee_details(userEmail, userPassword)
-      setEmployeeScheduleID(result[0].employeescheduled)
+    const result = await employee_details(userEmail, userPassword);
+    setEmployeeScheduleID(result[0].employeescheduled);
 
-      const shiftTime = await getShiftRotations(result[0].employeename)
+    const shiftTime = await getShiftRotations(result[0].employeename);
 
-      console.log("ShiftTime", shiftTime)
-      setShiftDate(shiftTime[0].shiftdate)
-      setShiftStart(shiftTime[0].starttime)
-      setshiftEnd(shiftTime[0].endtime)
-  
-    
-      console.log("Employee Name", result)
-  }
+    console.log("ShiftTime", shiftTime);
+    setShiftDate(shiftTime[0].shiftdate);
+    setShiftStart(shiftTime[0].starttime);
+    setshiftEnd(shiftTime[0].endtime);
 
-  useEffect(() => {displayUserInfo()}, [])
-  
+    console.log("Employee Name", result);
+  };
 
+  displayUserInfo();
   const handleClockAction = async () => {
     const now = new Date();
     const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
@@ -132,7 +130,6 @@ export default function AttendanceForm() {
   return (
     <div className="main-container">
       <div className="right-area">
-
         {/* Main content */}
         <main className="main-area">
           <h1>Attendance</h1>
