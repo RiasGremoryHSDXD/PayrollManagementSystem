@@ -10,9 +10,7 @@ export default function AttendanceForm() {
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-  const [employeeName, setEmployeeName] = useState<string>("");
   const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0);
-  const { userEmail, userPassword } = useAuth();
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -113,7 +111,6 @@ export default function AttendanceForm() {
   return (
     <div className="main-container">
       <div className="right-area">
-
         {/* Main content */}
         <main className="main-area">
           <div className="flex justify-between px-4 items-center">
