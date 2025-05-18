@@ -13,7 +13,6 @@ export default function AttendanceForm() {
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
   const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0);
-  const [shiftDate, setShiftDate] = useState<string>("");
   const [shiftStart, setShiftStart] = useState<number>(0);
   const [shiftEnd, setshiftEnd] = useState<number>(0);
   const [allowedBreak, setshiftBreak] = useState<number>(0);
@@ -21,6 +20,7 @@ export default function AttendanceForm() {
   const [timein, setTimeIn] = useState<number>(0);
   const [timeout, setTimeOut] = useState<number>(0);
   const [overtime, setOverTime] = useState<number>(0);
+  const [shiftDate, setShiftDate] = useState<Date>()
 
   const { userEmail, userPassword } = useAuth();
 
@@ -205,12 +205,12 @@ export default function AttendanceForm() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                   />
                 </svg>
@@ -252,12 +252,12 @@ export default function AttendanceForm() {
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     stroke="currentColor"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M6 18 18 6M6 6l12 12"
                     />
                   </svg>
@@ -266,12 +266,12 @@ export default function AttendanceForm() {
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     stroke="currentColor"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="m4.5 12.75 6 6 9-13.5"
                     />
                   </svg>
