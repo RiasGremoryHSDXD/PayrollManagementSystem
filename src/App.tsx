@@ -1,6 +1,6 @@
 import "./css/App.css";
 import LogInForm from "./pages/LogInForm/index";
-import DashBoardEmployee from "./pages/Dashboard/Employee";
+import DashBoardEmployee from "./pages/DashBoard/Employee";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "../src/auth/ProtectedRoute";
 function App() {

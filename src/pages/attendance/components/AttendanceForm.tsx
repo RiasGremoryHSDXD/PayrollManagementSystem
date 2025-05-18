@@ -3,7 +3,9 @@ import "../css/AttendanceForm.css";
 import { useAuth } from "../../../auth/AuthContext";
 import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails";
 import { getShiftRotations } from "../components/AttedanceDatabase";
-import supabase from "../../../config/SupabaseClient";
+import { getAttendanceHistory } from "./AttendanceHistory";
+import { insertClockIn } from "./InsertClockIn";
+import { updateClockOut } from "./InsertClockOut";
 
 export default function AttendanceForm() {
   const [time, setTime] = useState<Date>(new Date());
@@ -14,8 +16,15 @@ export default function AttendanceForm() {
   const [shiftDate, setShiftDate] = useState<string>("");
   const [shiftStart, setShiftStart] = useState<number>(0);
   const [shiftEnd, setshiftEnd] = useState<number>(0);
+  const [allowedBreak, setshiftBreak] = useState<number>(0);
+  const [attendancedate, setAttendancedate] = useState<string>("");
+  const [timein, setTimeIn] = useState<number>(0);
+  const [timeout, setTimeOut] = useState<number>(0);
+  const [overtime, setOverTime] = useState<number>(0);
+
   const { userEmail, userPassword } = useAuth();
 
+  // Clock ni siya
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
@@ -26,54 +35,43 @@ export default function AttendanceForm() {
     setEmployeeScheduleID(result[0].employeescheduled);
 
     const shiftTime = await getShiftRotations(result[0].employeename);
+    const attendance = await getAttendanceHistory(result[0].employeescheduled);
 
-    console.log("ShiftTime", shiftTime);
+    const formattedAttendanceDate = new Date(
+      attendance[0].attendancedate
+    ).toLocaleDateString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    console.log(attendance);
+    console.log(result);
+    console.log("employeeScheduleID", employeeScheduleID);
+
+    setAttendancedate(formattedAttendanceDate);
+    setTimeIn(attendance[0].timein);
+    setTimeOut(attendance[0].timeout);
+    setOverTime(attendance[0].ot);
     setShiftDate(shiftTime[0].shiftdate);
     setShiftStart(shiftTime[0].starttime);
     setshiftEnd(shiftTime[0].endtime);
+    setshiftBreak(shiftTime[0].breakminutes);
 
     console.log("Employee Name", result);
   };
 
-  displayUserInfo();
-  const handleClockAction = async () => {
-    const now = new Date();
-    const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  useEffect(() => {
+    displayUserInfo();
 
-    if (!isClockedIn) {
-      // Clocking in → INSERT
-      const { error } = await supabase.from("attendance").insert([
-        {
-          employeescheduled: employeeScheduleID,
-          attendancedate: today,
-          timein: now,
-          timeout: null,
-        },
-      ]);
+    const intervalId = setInterval(() => {
+      displayUserInfo();
+    }, 2_000);
 
-      if (error) {
-        console.error("Clock-in error:", error.message);
-      } else {
-        setClockInTime(now);
-        setClockOutTime(null);
-        setIsClockedIn(true);
-      }
-    } else {
-      // Clocking out → UPDATE
-      const { error } = await supabase
-        .from("attendance")
-        .update({ timeout: now })
-        .eq("employeescheduled", employeeScheduleID)
-        .eq("attendancedate", today);
-
-      if (error) {
-        console.error("Clock-out error:", error.message);
-      } else {
-        setClockOutTime(now);
-        setIsClockedIn(false);
-      }
-    }
-  };
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
   // Formatted time display
   const formattedDate = time.toLocaleDateString("en-PH", {
@@ -81,13 +79,6 @@ export default function AttendanceForm() {
     year: "numeric",
     month: "long",
     day: "numeric",
-  });
-
-  // Clock in Date
-  const clockInDate = time.toLocaleDateString("en-PH", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
   });
 
   // CLock in Day
@@ -98,32 +89,78 @@ export default function AttendanceForm() {
   const TotalHours = () => {
     if (!clockInTime || !clockOutTime) return "--:--:--";
 
-    const diffInMs = clockOutTime.getTime() - clockInTime.getTime();
-    const totalSeconds = Math.floor(diffInMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const start = new Date(clockInTime);
+    start.setSeconds(0, 0);
+
+    const end = new Date(clockOutTime);
+    end.setSeconds(0, 0);
+
+    const diffInMs = end.getTime() - start.getTime();
+    const totalMinutes = Math.round(diffInMs / (1000 * 60));
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
 
     return `${hours} hrs ${minutes} mins`;
   };
 
   const CalculateOvertime = (
     clockInTime: Date | null,
-    clockOutTime: Date | null
-  ): string => {
-    if (!clockInTime || !clockOutTime) return "--:--:--";
+    clockOutTime: Date | null,
+    shiftStartTime: number,
+    shiftEndTime: number
+  ): number => {
+    if (!clockInTime || !clockOutTime) return 0;
 
-    const diffInMs = clockOutTime.getTime() - clockInTime.getTime();
-    const totalMinutes = Math.floor(diffInMs / (1000 * 60));
+    const endHours = Math.floor(shiftEndTime / 100);
+    const endMins = shiftEndTime % 100;
 
-    const regularMinutes = 8 * 60;
-    const overtimeMinutes = totalMinutes - regularMinutes;
+    const shiftEndDate = new Date(clockInTime);
+    shiftEndDate.setHours(endHours, endMins, 0, 0);
 
-    if (overtimeMinutes <= 0) return "N/A";
+    if (clockOutTime <= shiftEndDate) {
+      return 0;
+    }
 
-    const overtimeHours = Math.floor(overtimeMinutes / 60);
-    const overtimeMins = overtimeMinutes % 60;
+    const overtimeMs = clockOutTime.getTime() - shiftEndDate.getTime();
+    const overtimeMinutes = Math.floor(overtimeMs / (1000 * 60));
+    return overtimeMinutes;
+  };
 
-    return `${overtimeHours} hrs ${overtimeMins} min)`;
+  const handleClockAction = async () => {
+    const now = new Date();
+    const date = now.toISOString().split("T")[0];
+    const time = now.toTimeString().split(" ")[0];
+
+    try {
+      const result = await employee_details(userEmail, userPassword);
+      const employeeScheduleID = result[0].employeescheduled;
+
+      if (!isClockedIn) {
+        const success = await insertClockIn(employeeScheduleID, date, time);
+        if (!success) {
+          console.error("Clock-in failed. Not inserted.");
+        }
+        setClockInTime(now);
+        setClockOutTime(null);
+        setIsClockedIn(true);
+      } else {
+        const overtimeMinutes = CalculateOvertime(
+          clockInTime,
+          now, // current time as clockOutTime
+          shiftStart,
+          shiftEnd
+        );
+
+        await updateClockOut(employeeScheduleID, date, time, overtimeMinutes);
+        setClockOutTime(now);
+        setIsClockedIn(false);
+      }
+
+      await displayUserInfo();
+    } catch (error) {
+      console.error("Clock In/Out failed:", error);
+    }
   };
 
   return (
@@ -131,11 +168,13 @@ export default function AttendanceForm() {
       <div className="right-area">
         {/* Main content */}
         <main className="main-area">
-          <h1>Attendance</h1>
-          <h1>Employee Sche ID {employeeScheduleID}</h1>
-          <h1>Shift Date: {shiftDate}</h1>
-          <h1>Shift Start: {shiftStart}</h1>
-          <h1>Shift End: {shiftEnd}</h1>
+          <div className="flex flex-row justify-between w-full items-center mb-7">
+            <h1 className="font-bold text-2xl">Attendance</h1>
+            <p>Shift Start: {shiftStart}</p>
+            <p>Allowed Break: {allowedBreak}mins</p>
+            <p>Shift End: {shiftEnd}</p>
+            <p>Employee Sche ID {employeeScheduleID}</p>
+          </div>
           <div className="attendance-UI-display">
             <div className="attendance-function">
               <div className="time-display">
@@ -259,28 +298,12 @@ export default function AttendanceForm() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td>{clockInDate}</td>
+                      <td>{attendancedate}</td>
                       <td>{clockInDay}</td>
-                      <td>
-                        {clockInTime
-                          ? clockInTime.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "--:--:--"}
-                      </td>
-                      <td>
-                        {clockOutTime
-                          ? clockOutTime.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "--:--:--"}
-                      </td>
+                      <td>{timein}</td>
+                      <td>{timeout}</td>
                       <td>{TotalHours() || "--"}</td>
-                      <td>
-                        {CalculateOvertime(clockInTime, clockOutTime) || "--"}
-                      </td>
+                      <td>{overtime}</td>
                       <td>--:--:--</td>
                     </tr>
                   </tbody>
