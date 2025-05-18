@@ -1,16 +1,16 @@
 import supabase from "../../../config/SupabaseClient";
 
 export async function updateClockOut(
-  empSchedId: number,
-  date: string,
-  time: string,
-  ot: number
+  attendanceId: number,
+  outDate: string,
+  outTime: string,
+  otMinutes: number
 ) {
-  const { error } = await supabase.rpc("clock_out", {
-    emp_sched_id: empSchedId,
-    out_date: date,
-    out_time: time,
-    ot_minutes: ot,
+  const { data, error } = await supabase.rpc("clock_out", {
+    p_attendanceid: attendanceId,
+    p_out_date: outDate,
+    p_out_time: outTime,
+    p_ot_minutes: otMinutes,
   });
 
   if (error) {
@@ -18,5 +18,5 @@ export async function updateClockOut(
     return false;
   }
 
-  return true;
+  return data;
 }

@@ -2,7 +2,7 @@
 
 @layer components {
   .main-container {
-    @apply flex flex-row gap-3 h-full;
+    @apply flex flex-row gap-3;
   }
 
   .logOut-btn {
@@ -102,8 +102,12 @@
     @apply flex flex-col gap-6;
   }
 
+  .table-history-container {
+    @apply flex-grow max-h-[600px] overflow-y-auto;
+  }
+
   .table-history {
-    @apply w-full text-left table-fixed;
+    @apply w-full border-collapse text-left;
   }
 
   .table-history th {

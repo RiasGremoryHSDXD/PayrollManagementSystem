@@ -5,7 +5,7 @@ export async function insertClockIn(
   date: string,
   time: string
 ) {
-  const { error } = await supabase.rpc("clock_in", {
+  const { data, error } = await supabase.rpc("clock_in", {
     emp_sched_id: empSchedId,
     in_date: date,
     in_time: time,
@@ -13,7 +13,9 @@ export async function insertClockIn(
 
   if (error) {
     console.error("Clock-In Error:", error);
-    return false;
+  } else {
+    const attendanceId = data; // Save this somewhere, like in state or context
+    console.log("Clocked in with attendance ID:", attendanceId);
   }
 
   return true;
