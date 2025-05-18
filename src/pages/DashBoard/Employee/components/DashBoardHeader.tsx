@@ -1,7 +1,7 @@
 import '../css/DashBoardHeader.css'
 import { useState, useEffect } from "react";
-import { useAuth } from '../../../auth/AuthContext';
-import { employee_details } from '../../Leaves/EmployeeDetail/EmployeeDetails'
+import { useAuth } from '../../../../auth/AuthContext';
+import { employee_details } from '../../../Leaves/EmployeeDetail/EmployeeDetails';
 
 export default function DashBoardHeader(){
     const [time] = useState<Date>(new Date());

@@ -17,19 +17,32 @@ export default function LogInForm() {
   const { login } = useAuth()
 
   useEffect(() => {
-    const storedUserName = localStorage.getItem('username')
-    const storedPassword = localStorage.getItem('password')
+    
+    async function loadDeatails() {
+      const storedUserName = localStorage.getItem('username')
+      const storedPassword = localStorage.getItem('password')
 
-    if(storedUserName && storedPassword)
+      if(storedUserName && storedPassword)
+        {
+          login(storedUserName, storedPassword)
+          await EmployeeDetails().catch(console.error)
+          const employee_position = localStorage.getItem('employeePosition')
+          if(employee_position === 'Manager')
+          {
+            navigate('/dashboardManager')
+          }
+          else
+          {
+            navigate('/dashboardEmployee')
+          }
+        }
+      else
       {
-        login(storedUserName, storedPassword)
-        EmployeeDetails().catch(console.error)
-        navigate('/dashboardEmployee')
+        setSaveCredentials(false)
       }
-    else
-    {
-      setSaveCredentials(false)
     }
+
+    loadDeatails()
   }, [])
 
   if(saveCredentials){
@@ -52,7 +65,16 @@ export default function LogInForm() {
           login(userEmail, userPassword) 
           localStorage.setItem('username', userEmail)
           localStorage.setItem('password', userPassword)
-          navigate('/dashboardEmployee')
+          await EmployeeDetails().catch(console.error)          
+          const employee_position = localStorage.getItem('employeePosition')
+          if(employee_position === 'Manager')
+          {
+            navigate('/dashboardManager')
+          }
+          else
+          {
+            navigate('/dashboardEmployee')
+          }
         } 
         else 
         {
