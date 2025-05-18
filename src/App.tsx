@@ -28,7 +28,15 @@ function App() {
       />
 
       {/*Manager Dashboard*/}
-        
+      <Route 
+        path="/dashboardManager"
+        element={
+          <ProtectedRoute>
+            <DashboardManager/>
+          </ProtectedRoute>
+        }
+      />
+      
     </Routes>
   );
 }
