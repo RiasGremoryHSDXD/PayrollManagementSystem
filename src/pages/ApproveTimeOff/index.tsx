@@ -187,7 +187,7 @@ export default function ApproveTimeOff() {
             start_date={startDate}
             end_date={endDate}
             day_requested={requestedDate}
-            leave_types={leaveStatus}
+            leave_types={leaveTypes}
             leave_status={leaveStatus}
             employee_schedule_id={employeeScheduleID}
             leave_id={leaveID}
