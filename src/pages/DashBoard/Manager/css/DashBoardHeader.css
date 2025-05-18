@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@layer components {
+  /* Header wrapper */
+  .header-area {
+    @apply flex w-[85vw] justify-between border-b border-gray-300 
+           items-center px-5 py-4 bg-white;
+  }
+
+  /* Left side: title + date */
+  .dashboard h1 {
+    @apply font-semibold text-xl;
+  }
+  .dashboard p {
+    @apply text-gray-600 text-sm;
+  }
+
+  /* Right side: avatar + name/role */
+  .profile {
+    @apply flex items-center gap-3;
+  }
+  .profile img {
+    @apply w-8 h-8;
+  }
+  .profile-name p:first-child {
+    @apply font-medium text-gray-800 text-sm;
+  }
+  .profile-name p:last-child {
+    @apply text-gray-600 text-sm;
+  }
+}
