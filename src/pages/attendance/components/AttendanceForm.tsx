@@ -11,7 +11,6 @@ export default function AttendanceForm() {
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
   const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0);
-  const [employeeName, setEmployeeName] = useState<string>("");
   const [shiftDate, setShiftDate] = useState<string>("");
   const [shiftStart, setShiftStart] = useState<number>(0);
   const [shiftEnd, setshiftEnd] = useState<number>(0);
