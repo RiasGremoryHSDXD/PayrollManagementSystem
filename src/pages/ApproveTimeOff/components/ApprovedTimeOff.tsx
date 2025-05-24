@@ -1,4 +1,3 @@
-import React from 'react'
 import { update_employee_leave_status } from '../UpdateLeaveRequest/UpdateLeaveRequest'
 
 export type EmployeeDetailsProps = {
@@ -27,7 +26,6 @@ export default function ApprovedTimeOff({
   day_requested,
   leave_types,
   leave_status,
-  employee_schedule_id,
   leave_id,
   onApprove,
   onReject,
