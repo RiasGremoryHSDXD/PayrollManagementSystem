@@ -31,23 +31,45 @@ export default function index() {
   }, [userEmail, userPassword])
 
   useEffect(() => {
-    
-    if(employeeScheID === null) return
+    if (employeeScheID === null) return;
 
     const fetchLeaves = () => {
       get_used_leave(employeeScheID, 'Vacation')
-        .then(result => setVactionUseLeave(result[0].total_leave))
+        .then(result => {
+          if (Array.isArray(result) && result.length > 0) {
+            setVactionUseLeave(result[0].total_leave);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching vacation leaves', err);
+        });
+
       get_used_leave(employeeScheID, 'Sick Leave')
-        .then(result => setSickLeave(result[0].total_leave))
+        .then(result => {
+          if (Array.isArray(result) && result.length > 0) {
+            setSickLeave(result[0].total_leave);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching sick leaves', err);
+        });
+
       get_used_leave(employeeScheID, 'Personal Leave')
-        .then(result => setPersonalLeave(result[0].total_leave))
-    }
+        .then(result => {
+          if (Array.isArray(result) && result.length > 0) {
+            setPersonalLeave(result[0].total_leave);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching personal leaves', err);
+        });
+    };
 
-    fetchLeaves()
+    fetchLeaves();
+    const intervalID = setInterval(fetchLeaves, 2000);
+    return () => clearInterval(intervalID);
+  }, [employeeScheID]);
 
-    const intervalID = setInterval(fetchLeaves, 2000)
-    return () => clearInterval(intervalID)
-  }, [employeeScheID])
 
   useEffect(() => {
     

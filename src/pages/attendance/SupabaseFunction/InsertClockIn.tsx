@@ -2,10 +2,10 @@ import supabase from "../../../config/SupabaseClient";
 
 export async function insertClockIn(
   empSchedId: number,
-  date: string,
+  date: Date,
   time: string
 ) {
-  const { data, error } = await supabase.rpc("clock_in", {
+  const { error } = await supabase.rpc("clock_in", {
     emp_sched_id: empSchedId,
     in_date: date,
     in_time: time,
@@ -13,10 +13,6 @@ export async function insertClockIn(
 
   if (error) {
     console.error("Clock-In Error:", error);
-  } else {
-    const attendanceId = data; // Save this somewhere, like in state or context
-    console.log("Clocked in with attendance ID:", attendanceId);
   }
-
-  return true;
+  return;
 }

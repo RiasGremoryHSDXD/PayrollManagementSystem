@@ -65,7 +65,6 @@ export default function AttendanceForm() {
         const inDate = new Date();      // uses today’s date
         inDate.setHours(h, m, s, 0);
         setClockInTime(inDate);
-        setIsClockedIn(true);
       }
 
       if (rec.time_out) {
@@ -73,15 +72,30 @@ export default function AttendanceForm() {
         const outDate = new Date();
         outDate.setHours(h2, m2, s2, 0);
         setClockOutTime(outDate);
-        setIsClockedIn(false);
       }
     }   
   }
 
+  const IsClockedIn = async () => {
+    const now = new Date();
+    const date = new Date(now.toISOString().split("T")[0]);
+    
+    const userAlreadyCloneToday = await validUserClockIn(date, employeeScheduleID)
+  }
+
   useEffect(() => {
-    setClockInOut()
-    displayUserInfo()
-  }, [])
+        setClockInOut();
+  }, []);
+
+  useEffect(() => {
+    displayUserInfo();
+    
+    const intervalId = setInterval(() => {
+      displayUserInfo();
+    }, 2000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Formatted time display
   const formattedDate = time.toLocaleDateString("en-PH", {
@@ -109,8 +123,9 @@ export default function AttendanceForm() {
       else
       {
         await insertClockIn(employeeScheduleID, date ,time)
-        setClockInOut()
-        displayUserInfo()
+        setClockInTime(now);
+        setClockOutTime(null);
+        setIsClockedIn(true);
       }
     }
     else  
@@ -123,8 +138,8 @@ export default function AttendanceForm() {
       else
       {
         await insertClockOut(date, employeeScheduleID, time)
-        setClockInOut()
-        displayUserInfo()
+        setClockOutTime(now);
+        setIsClockedIn(false);
       }
     }
   };
