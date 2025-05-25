@@ -2,11 +2,11 @@
 
 @layer components {
   aside {
-    @apply w-[15vw] hidden md:flex flex-col bg-white border-r border-gray-200 h-screen;
+    @apply w-[15vw] hidden md:flex flex-col bg-white border-r border-gray-400 h-screen;
   }
 
   .heading-container {
-    @apply p-7.5 border-b border-gray-200;
+    @apply p-7.5 border-b border-gray-400;
   }
 
   .navigation {
@@ -22,11 +22,11 @@
   }
 
   nav button {
-    @apply flex items-center space-x-3 w-full p-2.5 rounded-lg text-left hover:bg-gray-100 hover:text-blue-500;
+    @apply flex items-center space-x-3 w-full p-2.5 rounded-lg text-left hover:bg-gray-400 hover:text-blue-500;
   }
 
   .logOut-btn-container {
-    @apply p-4 border-t border-gray-200;
+    @apply p-4 border-t border-gray-400;
   }
 
   .logOut-btn {

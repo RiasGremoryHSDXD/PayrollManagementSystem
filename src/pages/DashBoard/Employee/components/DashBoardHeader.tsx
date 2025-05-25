@@ -1,16 +1,27 @@
 import "../css/DashBoardHeader.css";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../../auth/AuthContext";
-import { employee_details } from "../../../Leaves/EmployeeDetail/EmployeeDetails";
+import { employee_details } from "../../../Leaves/SupabaseFunction/EmployeeDetails";
 import { useNavigate } from "react-router-dom";
 import "remixicon/fonts/remixicon.css";
 
-export default function DashBoardHeader() {
-  const [time] = useState<Date>(new Date());
-  const [employeeName, setEmployeeName] = useState<string>("");
-  const [employeePosition, setEmployeePosition] = useState<string>("");
+type View = "attendance" | "payroll" | "leave";
 
+interface DashBoardHeader {
+  activeView: View;
+  onChangeView: (view: View) => void;
+}
+
+export default function DashBoardHeader({
+  activeView,
+  onChangeView,
+}: DashBoardHeader) {
+  const [time] = useState(new Date());
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeePosition, setEmployeePosition] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
   const { userEmail, userPassword } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getEmployeeName();
@@ -35,15 +46,31 @@ export default function DashBoardHeader() {
     day: "numeric",
   });
 
+  const handleViewChange = (view: View) => {
+    onChangeView(view);
+    setShowMenu(false);
+  };
+  const handleLogOut = () => {
+    localStorage.clear();
+    navigate("/");
+  };
+
   return (
     <header>
       <div className="dashboard">
         <div className="dashboard-left">
-          <div className="nav_toggle">
-            <i className="ri-menu-line nav__burger"></i>
-            <i className="ri-close-large-line nav__close"></i>
+          <div className="nav_toggle" onClick={() => setShowMenu(!showMenu)}>
+            <i
+              className={`ri-menu-line nav_burger ${
+                showMenu ? "opacity-0" : "opacity-100"
+              }`}
+            ></i>
+            <i
+              className={`ri-close-line nav_close ${
+                showMenu ? "opacity-100" : "opacity-0"
+              }`}
+            ></i>
           </div>
-          <div className="nav_menu"></div>
           <h1 className="text-[clamp(0.875rem,2vw,1.125rem)] hidden md:block text-gray-700">
             Dashboard
           </h1>
@@ -54,7 +81,7 @@ export default function DashBoardHeader() {
 
         <div className="dashboard-right">
           <div>
-            <img src="public/person_icon.svg" alt="person_icon" />
+            <img src="/person_icon.svg" alt="person_icon" />
           </div>
           <div className="profile-name">
             <p className="text-[clamp(0.75rem,2vw,1rem)] font-medium text-gray-700">
@@ -66,6 +93,32 @@ export default function DashBoardHeader() {
           </div>
         </div>
       </div>
+
+      {showMenu && (
+        <div className="dropdown-container md:hidden">
+          <button
+            className={activeView === "attendance" ? "active" : ""}
+            onClick={() => handleViewChange("attendance")}
+          >
+            Attendance
+          </button>
+          <button
+            className={activeView === "payroll" ? "active" : ""}
+            onClick={() => handleViewChange("payroll")}
+          >
+            Payroll
+          </button>
+          <button
+            className={activeView === "leave" ? "active" : ""}
+            onClick={() => handleViewChange("leave")}
+          >
+            Leave
+          </button>
+          <button className="text-red-600" onClick={handleLogOut}>
+            Log Out
+          </button>
+        </div>
+      )}
     </header>
   );
 }

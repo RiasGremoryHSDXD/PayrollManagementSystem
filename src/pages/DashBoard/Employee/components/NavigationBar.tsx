@@ -1,7 +1,7 @@
 import "../css/NavigationBar.css";
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
-export type View = "overview" | "attendance" | "payroll" | "leave";
+export type View = "attendance" | "payroll" | "leave";
 
 interface AsideNavProp {
   activeView: View;

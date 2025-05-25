@@ -182,9 +182,11 @@ export default function AttendanceForm() {
 
       <div className="right-area">
         {/* Main content */}
-        <main className="main-area">
-          <div className="flex flex-row justify-between w-full items-center mb-7">
-            <h1 className="font-bold text-2xl">Attendance</h1>
+        <main className="main-area bg-gray-200">
+          <div className="flex flex-row justify-between w-full items-center mb-4 md:mb-7">
+            <h1 className="font-semibold text-xl md:font-bold md:text-2xl">
+              Attendance
+            </h1>
           </div>
           <div className="attendance-UI-display">
             <div className="attendance-function">

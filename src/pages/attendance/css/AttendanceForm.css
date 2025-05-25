@@ -2,7 +2,7 @@
 
 @layer components {
   .main-container {
-    @apply flex gap-3;
+    @apply flex gap-3 h-full overflow-y-auto;
   }
 
   .logOut-btn {
@@ -30,19 +30,19 @@
   }
 
   .main-area {
-    @apply h-full bg-gray-50 p-6 w-full;
+    @apply h-full sm:bg-gray-200 p-4 md:p-6 w-full;
   }
 
   .attendance-UI-display {
-    @apply flex flex-col md:flex-row justify-between gap-4 w-full;
+    @apply flex flex-col md:flex-row justify-between gap-4 w-full  min-h-0;
   }
 
   .attendance-history {
-    @apply w-full rounded bg-white p-6 shadow-2xs;
+    @apply flex-col w-full rounded-lg bg-white p-6 overflow-x-auto shadow-2xs h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] xl:h-[80vh];
   }
 
   .attendance-function {
-    @apply w-[48%] rounded-xl bg-white p-6 shadow-2xs;
+    @apply w-full md:w-[40%] rounded-xl bg-white p-6 shadow-2xs min-h-[300px] flex-shrink-0;
   }
 
   .time-display {
@@ -98,23 +98,19 @@
     @apply w-[20px] h-[20px];
   }
 
-  .attendance-history {
-    @apply flex flex-col gap-6;
-  }
-
   .table-history-container {
-    @apply flex-grow max-h-[600px] overflow-y-auto;
+    @apply flex-grow overflow-auto;
   }
 
   .table-history {
-    @apply w-full border-collapse text-left;
+    @apply w-full border-collapse text-left overflow-auto;
   }
 
   .table-history th {
-    @apply w-1/7 border-b border-gray-300 px-3 py-4 font-medium text-gray-500 text-xs;
+    @apply w-1/7 border-b top-0 sticky border-gray-300 px-3 py-4 font-medium text-gray-500 text-xs md:text-sm whitespace-nowrap;
   }
 
   .table-history td {
-    @apply border-b border-gray-300 px-3 py-4 font-normal text-gray-800 text-sm;
+    @apply border-b border-gray-300 px-3 py-4 font-normal text-gray-800 text-sm whitespace-nowrap;
   }
 }
