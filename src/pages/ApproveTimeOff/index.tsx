@@ -29,6 +29,7 @@ export default function ApproveTimeOff() {
   const [leaveTypes, setLeaveTypes] = useState<string>('')
   const [leaveStatus, setLeaveStatus] = useState<string>('')
   const [leaveID, setLeaveID] = useState<number>(0)
+  // const [managerID] = useState(localStorage.getItem('employeeID'))
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
@@ -97,6 +98,7 @@ export default function ApproveTimeOff() {
     setLeaveID(r.leave_id)
     setClickRow(true)    
   }
+
 
   return (
     <div className="p-4">
@@ -168,20 +170,11 @@ export default function ApproveTimeOff() {
           </tbody>
         </table>
       </div>
-
+          
     {clickRow && (
-        // <div className="border fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        //     <h1>{firstName}</h1>
-        //     <h1>{lastName}</h1>
-        //     <h1>{employeeScheduleID}</h1>
-        //     <h1>{startDate}</h1>
-        //     <h1>{endDate}</h1>
-        //     <h1>{requestedDate}</h1>
-        //     <h1>{leaveTypes}</h1>
-        //     <h1>{leaveStatus}</h1>
-        //     <h1>{leaveID}</h1>
-        // </div>
+        
         <ApprovedTimeOff
+            currentManagerID={localStorage.getItem('employeeID')}
             first_name={firstName}
             last_name={lastName}
             start_date={startDate}
@@ -191,6 +184,9 @@ export default function ApproveTimeOff() {
             leave_status={leaveStatus}
             employee_schedule_id={employeeScheduleID}
             leave_id={leaveID}
+            onApprove={() => setClickRow(false)}
+            onReject={() => setClickRow(false)}
+            onCancel={() => setClickRow(false)}
         />
     )}
     </div>

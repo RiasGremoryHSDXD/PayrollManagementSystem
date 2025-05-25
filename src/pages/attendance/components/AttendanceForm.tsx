@@ -1,28 +1,31 @@
 import { useEffect, useState } from "react";
 import "../css/AttendanceForm.css";
 import { useAuth } from "../../../auth/AuthContext";
-import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails";
-import { getShiftRotations } from "./AttendanceDatabase";
-import { getAttendanceHistory } from "./AttendanceHistory";
-import { insertClockIn } from "./InsertClockIn";
-import { updateClockOut } from "./InsertClockOut";
-import { attendanceID } from "./RetrieveAttendanceID";
+import { employee_details } from "../../Leaves/SupabaseFunction/EmployeeDetails";
+import { getShiftRotations } from "../SupabaseFunction/AttendanceDatabase";
+import { getAttendanceHistory } from "../SupabaseFunction/AttendanceHistory";
+import { insertClockIn } from "../SupabaseFunction/InsertClockIn";
+import { insertClockOut } from "../SupabaseFunction/InsertClockOut";
+import {
+  validUserClockIn,
+  userOnLeave,
+} from "../SupabaseFunction/ValidateClockIn";
+import { validUserClockOut } from "../SupabaseFunction/ValidateClockOut";
+import { getClockInOut } from "../SupabaseFunction/RetrieveClockInOut";
 
 export default function AttendanceForm() {
   const [time, setTime] = useState<Date>(new Date());
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(0);
+  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(
+    parseInt(localStorage.getItem("employeeScheduleID")!, 10)
+  );
   const [shiftStart, setShiftStart] = useState<number>(0);
   const [shiftEnd, setshiftEnd] = useState<number>(0);
   const [allowedBreak, setshiftBreak] = useState<number>(0);
-  const [attendancedate, setAttendancedate] = useState<string>("");
-  const [attendanceId, setAttendanceId] = useState<number | null>(null);
-  const [timein, setTimeIn] = useState<number>(0);
-  const [timeout, setTimeOut] = useState<number>(0);
-  const [overtime, setOverTime] = useState<number>(0);
-  const [shiftDate, setShiftDate] = useState<Date>();
+  const [clockInLeaveError, setClockInLeaveError] = useState<boolean>(false);
+  const [isAlreadyClockOut, setIsAlreadyClockOut] = useState<boolean>(false);
 
   const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
   const { userEmail, userPassword } = useAuth();
@@ -37,7 +40,6 @@ export default function AttendanceForm() {
     const result = await employee_details(userEmail, userPassword);
     setEmployeeScheduleID(result[0].employeescheduled);
 
-    const attendanceIDresult = await attendanceID();
     const shiftTime = await getShiftRotations(result[0].employeename);
     const attendance = await getAttendanceHistory(result[0].employeescheduled);
     attendance.sort((a: any, b: any) => {
@@ -48,52 +50,40 @@ export default function AttendanceForm() {
 
     setAttendanceHistory(attendance);
 
-    const formattedAttendanceDate = new Date(
-      attendance[0].attendancedate
-    ).toLocaleDateString("en-PH", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-
-    setAttendanceId(attendanceIDresult);
-    setAttendancedate(formattedAttendanceDate);
-
-    const timeInStr = attendance[0].timein;
-    const timeOutStr = attendance[0].timeout;
-
-    if (timeInStr) {
-      const [h, m, s] = timeInStr.split(":").map(Number);
-      const clockInDate = new Date();
-      clockInDate.setHours(h, m, s, 0);
-      setClockInTime(clockInDate);
-    } else {
-      setClockInTime(null);
-    }
-
-    if (timeOutStr) {
-      const [h, m, s] = timeOutStr.split(":").map(Number);
-      const clockOutDate = new Date();
-      clockOutDate.setHours(h, m, s, 0);
-      setClockOutTime(clockOutDate);
-    } else {
-      setClockOutTime(null);
-    }
-
-    setIsClockedIn(!timeOutStr);
-
-    setTimeIn(attendance[0].timein);
-    setTimeOut(attendance[0].timeout);
-    setOverTime(attendance[0].ot);
-    setShiftDate(shiftTime[0].shiftdate);
     setShiftStart(shiftTime[0].starttime);
     setshiftEnd(shiftTime[0].endtime);
     setshiftBreak(shiftTime[0].breakminutes);
+  };
 
-    console.log("Employee Name", result);
+  const setClockInOut = async () => {
+    const now = new Date();
+    const date = new Date(now.toISOString().split("T")[0]);
+
+    const resultClockInOut = await getClockInOut(date, employeeScheduleID);
+
+    if (resultClockInOut.length === 1) {
+      const rec = resultClockInOut[0];
+
+      if (rec.time_in) {
+        const [h, m, s] = rec.time_in.split(":").map(Number);
+        const inDate = new Date(); // uses today’s date
+        inDate.setHours(h, m, s, 0);
+        setClockInTime(inDate);
+        setIsClockedIn(true);
+      }
+
+      if (rec.time_out) {
+        const [h2, m2, s2] = rec.time_out.split(":").map(Number);
+        const outDate = new Date();
+        outDate.setHours(h2, m2, s2, 0);
+        setClockOutTime(outDate);
+        setIsClockedIn(false);
+      }
+    }
   };
 
   useEffect(() => {
+    setClockInOut();
     displayUserInfo();
   }, []);
 
@@ -105,115 +95,91 @@ export default function AttendanceForm() {
     day: "numeric",
   });
 
-  // CLock in Day
-  const clockInDay = time.toLocaleDateString("en-PH", {
-    weekday: "short",
-  });
-
-  const CalculateOvertime = (
-    clockInTime: Date | null,
-    clockOutTime: Date | null,
-    shiftStartTime: number,
-    shiftEndTime: number
-  ): number => {
-    if (
-      !clockInTime ||
-      !clockOutTime ||
-      isNaN(shiftEndTime) ||
-      isNaN(shiftStartTime)
-    )
-      return 0;
-
-    // Parse shift start and end hours and minutes from HHMM format
-    const startHours = Math.floor(shiftStartTime / 100);
-    const startMins = shiftStartTime % 100;
-    const endHours = Math.floor(shiftEndTime / 100);
-    const endMins = shiftEndTime % 100;
-
-    // Create shift start date
-    let shiftStartDate = new Date(clockInTime);
-    shiftStartDate.setHours(startHours, startMins, 0, 0);
-
-    // Create shift end date initially on the same day as shiftStartDate
-    let shiftEndDate = new Date(clockInTime);
-    shiftEndDate.setHours(endHours, endMins, 0, 0);
-
-    // If shift end time is before or equal to shift start, it means overnight shift: add 1 day
-    if (shiftEndDate <= shiftStartDate) {
-      shiftEndDate.setDate(shiftEndDate.getDate() + 1);
-    }
-
-    // Adjust clockOutTime if it's earlier than clockInTime (crosses midnight)
-    let adjustedClockOut = new Date(clockOutTime);
-    if (adjustedClockOut < clockInTime) {
-      adjustedClockOut.setDate(adjustedClockOut.getDate() + 1);
-    }
-
-    // If clockOutTime is before or equal to shift end, no overtime
-    if (adjustedClockOut <= shiftEndDate) return 0;
-
-    // Calculate difference in minutes between clockOutTime and shiftEndDate
-    const overtimeMs = adjustedClockOut.getTime() - shiftEndDate.getTime();
-    const overtimeMinutes = Math.floor(overtimeMs / (1000 * 60));
-
-    return overtimeMinutes;
-  };
-
   const handleClockAction = async () => {
     const now = new Date();
-    const date = now.toISOString().split("T")[0];
+    const date = new Date(now.toISOString().split("T")[0]);
     const time = now.toTimeString().split(" ")[0];
 
-    try {
-      const result = await employee_details(userEmail, userPassword);
-      const employeeScheduleID = result[0].employeescheduled;
+    const validatedUserClockIn = await validUserClockIn(
+      date,
+      employeeScheduleID
+    );
 
-      if (!isClockedIn) {
-        // Only clock in: do NOT set overtime yet
-        const success = await insertClockIn(employeeScheduleID, date, time);
-        if (!success) {
-          console.error("Clock-in failed. Not inserted.");
-          return;
-        }
-        console.log(attendanceId);
+    if (validatedUserClockIn === 1) {
+      const validatedUserOnLeave = await userOnLeave(date, employeeScheduleID);
 
-        setClockInTime(now);
-        setClockOutTime(null);
-        setIsClockedIn(true);
+      if (validatedUserOnLeave) {
+        setClockInLeaveError(true);
       } else {
-        const overtimeMinutes = CalculateOvertime(
-          clockInTime,
-          now,
-          shiftStart,
-          shiftEnd
-        );
-
-        if (attendanceId !== null) {
-          await updateClockOut(attendanceId, date, time, overtimeMinutes);
-          console.log("Clocking out with:", {
-            attendanceId,
-            date,
-            time,
-            overtimeMinutes,
-          });
-        } else {
-          console.error("No attendance ID found for update.");
-          return;
-        }
-
-        setClockOutTime(now);
-        setIsClockedIn(false);
+        await insertClockIn(employeeScheduleID, date, time);
+        setClockInOut();
+        displayUserInfo();
       }
+    } else {
+      const validClockOut = await validUserClockOut(date, employeeScheduleID);
 
-      // Refresh data after update
-      await displayUserInfo();
-    } catch (error) {
-      console.error("Clock In/Out failed:", error);
+      if (validClockOut) {
+        setIsAlreadyClockOut(true);
+      } else {
+        await insertClockOut(date, employeeScheduleID, time);
+        setClockInOut();
+        displayUserInfo();
+      }
     }
   };
 
   return (
     <div className="main-container">
+      {clockInLeaveError && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
+          role="alert"
+        >
+          <div className="bg-red-50 w-80 p-6 rounded-xl shadow-lg border-2 border-red-500">
+            {/* Message */}
+            <h1 className="text-red-700 mb-6 text-sm text-center">
+              You have pending or approved leave today.
+              <br />
+              Cancel your leave before clocking in.
+            </h1>
+
+            {/* OK button */}
+            <div className="flex justify-center">
+              <button
+                onClick={() => setClockInLeaveError(false)}
+                className="px-6 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isAlreadyClockOut && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/40 z-50"
+          role="alert"
+        >
+          <div className="bg-white w-80 p-6 rounded-xl shadow-lg border border-red-400">
+            <h2 className="text-red-600 font-semibold mb-4 text-center">
+              You’ve already clocked out for today.
+            </h2>
+            <p className="text-gray-700 mb-6 text-center">
+              Please try again tomorrow.
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setIsAlreadyClockOut(false)}
+                className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="right-area">
         {/* Main content */}
         <main className="main-area">
