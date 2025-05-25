@@ -1,6 +1,9 @@
+import ListOfEmployee from "./components/ListOfEmployee"
 
 export default function index() {
   return (
-    <div>ApproveTimeSheet</div>
+    <div>
+      <ListOfEmployee/>
+    </div>
   )
 }
