@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import '../css/RequestForm.css'
 import ErrorToast from './ErrorToast'
 import { useAuth } from '../../../auth/AuthContext'
-import { employee_details } from '../EmployeeDetail/EmployeeDetails'
-import { insertLeaveWithDetails } from '../../Leaves/AddLeaveDB/AddLeaveDB'
+import { employee_details } from '../SupabaseFunction/EmployeeDetails'
+import { insertLeaveWithDetails } from '../SupabaseFunction/AddLeaveDB'
 
 export default function RequestForm() {
     const [formData, setFormData] = useState({

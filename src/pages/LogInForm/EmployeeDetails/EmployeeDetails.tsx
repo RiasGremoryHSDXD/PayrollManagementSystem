@@ -1,4 +1,4 @@
-import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails";
+import { employee_details } from "../../Leaves/SupabaseFunction/EmployeeDetails";
 
 export async function EmployeeDetails():Promise<void>
 {

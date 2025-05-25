@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "../css/AttendanceForm.css";
 import { useAuth } from "../../../auth/AuthContext";
-import { employee_details } from "../../Leaves/EmployeeDetail/EmployeeDetails";
+import { employee_details } from "../../Leaves/SupabaseFunction/EmployeeDetails";
 import { getShiftRotations } from "../SupabaseFunction/AttendanceDatabase";
 import { getAttendanceHistory } from "../SupabaseFunction/AttendanceHistory";
 import { insertClockIn } from "../SupabaseFunction/InsertClockIn";

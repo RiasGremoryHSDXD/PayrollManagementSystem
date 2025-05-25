@@ -1,49 +1,46 @@
-import { useAuth } from "../../../auth/AuthContext";
-import { getLeaveHistory } from "../RequestHistory/RequestLeaveHistory";
 import { useEffect, useState } from "react";
-import { employee_details } from '../EmployeeDetail/EmployeeDetails'
+import { getLeaveHistory } from "../SupabaseFunction/RequestLeaveHistory";
+import { cancelLeaveRequest } from "../SupabaseFunction/CancelLeaveRequest";
+import { deleteLeaveRequest } from "../SupabaseFunction/DeleteLeaveRequest";
 
 interface LeaveHistoryItem {
+  leave_id: number;
   leave_type: string;
   startdate: string;
   enddate: string;
   requested: string;
-  status: "Approved" | "Pending" | "Rejected"; // Update based on your enum
+  approveddate: string;
+  status: "Approved" | "Pending" | "Rejected" | "Cancelled";
 }
 
 export default function RequestHistory() {
-  const { userEmail, userPassword } = useAuth();
   const [history, setHistory] = useState<LeaveHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
-
-
+  const [selected, setSelected] = useState<LeaveHistoryItem | null>(null);
+  const [employeeScheduleID] = useState<number>(parseInt(localStorage.getItem('employeeScheduleID')!, 10));
 
   const fetchLeaveHistory = async () => {
     setLoading(true);
-    try { 
-      const result = await employee_details(userEmail, userPassword)
-
-      const data = await getLeaveHistory(result[0].employeescheduled);
+    try {
+      const schedId = employeeScheduleID;
+      const data = await getLeaveHistory(schedId);
       if (data) {
         setHistory(data);
       }
-    } catch (error) {
-      console.error("Error fetching leave history:", error);
+    } catch (err) {
+      console.error("Error fetching leave history:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
+  const handleCancelRequest = async (leave_id: number) =>  await cancelLeaveRequest(leave_id)
+  const handleDeleteRequest = async (leave_id: number) => await deleteLeaveRequest(leave_id)
+
   useEffect(() => {
-    // fetch once immediately
     fetchLeaveHistory();
-
-    const intervalId = setInterval(() => {
-      fetchLeaveHistory();
-    }, 2_000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
+    const intervalId = setInterval(fetchLeaveHistory, 2000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const getStatusColor = (status: string) => {
@@ -60,11 +57,9 @@ export default function RequestHistory() {
   };
 
   const calculateDays = (start: string, end: string) => {
-    const diff =
-      (new Date(end).getTime() - new Date(start).getTime()) /
-      (1000 * 60 * 60 * 24) +
-      1;
-    return Math.max(diff, 1); // At least 1 day
+    const diffMs = new Date(end).getTime() - new Date(start).getTime();
+    const days = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
+    return days;
   };
 
   return (
@@ -82,10 +77,11 @@ export default function RequestHistory() {
             </tr>
           </thead>
           <tbody className="text-sm text-gray-600">
-            {history.map((item, index) => (
+            {history.map((item, idx) => (
               <tr
-                key={index}
-                className="border-t hover:bg-gray-50 transition-colors"
+                key={idx}
+                className="border-t hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => setSelected(item)}
               >
                 <td className="px-4 py-2">{item.leave_type}</td>
                 <td className="px-4 py-2">
@@ -94,16 +90,14 @@ export default function RequestHistory() {
                     month: "long",
                     day: "numeric",
                   })}{" "}
-                  -{" "}
+                  –{" "}
                   {new Date(item.enddate).toLocaleDateString(undefined, {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   })}
                 </td>
-                <td className="px-4 py-2">
-                  {calculateDays(item.startdate, item.enddate)}
-                </td>
+                <td className="px-4 py-2">{calculateDays(item.startdate, item.enddate)}</td>
                 <td className="px-4 py-2">
                   {new Date(item.requested).toLocaleDateString(undefined, {
                     year: "numeric",
@@ -122,7 +116,7 @@ export default function RequestHistory() {
                 </td>
               </tr>
             ))}
-            {history.length === 0 && !loading && (
+            {!loading && history.length === 0 && (
               <tr>
                 <td colSpan={5} className="text-center py-4 text-gray-500">
                   No leave history found.
@@ -132,6 +126,103 @@ export default function RequestHistory() {
           </tbody>
         </table>
       </div>
+
+    {selected && (
+      <div
+        className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-4 sm:p-6 overflow-auto">
+          {/* Close */}
+          <button
+            onClick={() => setSelected(null)}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl sm:text-3xl"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+
+          <h3 className="text-lg sm:text-xl font-semibold mb-4 text-center">
+            Leave Details
+          </h3>
+
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm text-gray-700">
+            <div>
+              <dt className="font-medium">Leave ID</dt>
+              <dd>{selected.leave_id}</dd>
+            </div>
+            <div>
+              <dt className="font-medium">Type</dt>
+              <dd>{selected.leave_type}</dd>
+            </div>
+            <div>
+              <dt className="font-medium">Start Date</dt>
+              <dd>{new Date(selected.startdate).toLocaleDateString()}</dd>
+            </div>
+            <div>
+              <dt className="font-medium">End Date</dt>
+              <dd>{new Date(selected.enddate).toLocaleDateString()}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="font-medium">Requested On</dt>
+              <dd>{new Date(selected.requested).toLocaleString()}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="font-medium">Reviewed On</dt>
+              <dd>
+                {selected.approveddate
+                  ? new Date(selected.approveddate).toLocaleString()
+                  : "Not reviewed yet"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium">Status</dt>
+              <dd>
+                <span
+                  className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                    selected.status
+                  )}`}
+                >
+                  {selected.status}
+                </span>
+              </dd>
+            </div>
+          </dl>
+
+          {/* Actions */}
+          {(selected.status === "Pending" || selected.status === "Cancelled") && (
+            <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
+              {selected.status === "Pending" && (
+                <button
+                  onClick={async () => {
+                    await handleCancelRequest(selected.leave_id);
+                    setSelected(null);
+                    await fetchLeaveHistory();
+                  }}
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                >
+                  Cancel Leave
+                </button>
+              )}
+              {selected.status === "Cancelled" && (
+                <button
+                  onClick={async () => {
+                    await handleDeleteRequest(selected.leave_id);
+                    setSelected(null);
+                    await fetchLeaveHistory();
+                  }}
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                >
+                  Delete Request
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+
     </div>
   );
 }

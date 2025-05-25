@@ -3,7 +3,7 @@ import NewRequest from "./components/NewRequest"
 import Leave from "./components/LeaveCard"
 import RequestHistory from './components/RequestHistory'
 import { useAuth } from '../../auth/AuthContext'
-import { employee_details } from './EmployeeDetail/EmployeeDetails'
+import { employee_details } from './SupabaseFunction/EmployeeDetails'
 import { get_used_leave } from './SupabaseFunction/GetUsedLeave'
 import { get_max_leave_day } from './SupabaseFunction/GetTotalLeave'
 import { useEffect, useState } from 'react'
