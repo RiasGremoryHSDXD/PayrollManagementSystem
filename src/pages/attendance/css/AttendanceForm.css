@@ -2,7 +2,7 @@
 
 @layer components {
   .main-container {
-    @apply flex flex-row gap-3;
+    @apply flex gap-3;
   }
 
   .logOut-btn {
@@ -34,7 +34,7 @@
   }
 
   .attendance-UI-display {
-    @apply flex flex-row justify-between gap-4 w-full;
+    @apply flex flex-col md:flex-row justify-between gap-4 w-full;
   }
 
   .attendance-history {

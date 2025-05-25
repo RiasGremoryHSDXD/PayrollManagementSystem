@@ -1,31 +1,50 @@
 @import "tailwindcss";
 
 @layer components {
-  /* Header wrapper */
-  .header-area {
-    @apply flex w-[85vw] justify-between border-b border-gray-300 
-           items-center px-5 py-4 bg-white;
+  header {
+    @apply bg-white border-b border-gray-200 p-4;
   }
 
-  /* Left side: title + date */
-  .dashboard h1 {
-    @apply font-semibold text-xl;
-  }
-  .dashboard p {
-    @apply text-gray-600 text-sm;
+  .dashboard {
+    @apply flex md:flex-row items-start md:items-center justify-between gap-4;
   }
 
-  /* Right side: avatar + name/role */
-  .profile {
-    @apply flex items-center gap-3;
+  .dashboard-right {
+    @apply flex items-center space-x-2;
   }
-  .profile img {
-    @apply w-8 h-8;
+
+  img {
+    @apply w-5 h-5 mr-1 md:w-6 md:h-6 md:mr-2;
   }
-  .profile-name p:first-child {
-    @apply font-medium text-gray-800 text-sm;
+  .nav_toggle {
+    @apply flex relative md:hidden w-7 h-7 mr-2 justify-center items-center;
   }
-  .profile-name p:last-child {
-    @apply text-gray-600 text-sm;
+
+  .nav__burger,
+  .nav__close {
+    @apply absolute w-max h-max m-auto text-lg cursor-pointer transition-opacity duration-1000 ease-in-out;
+  }
+
+  .nav__close {
+    @apply opacity-0;
+  }
+
+  @layer components {
+    .Dropdown-item {
+      @apply px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded text-left w-full;
+    }
+
+    .Dropdown-item.active {
+      @apply font-semibold text-blue-600;
+    }
+
+    .nav__burger,
+    .nav__close {
+      @apply absolute w-max h-max m-auto text-lg cursor-pointer transition-opacity duration-300 ease-in-out;
+    }
+
+    .nav__close {
+      @apply opacity-0;
+    }
   }
 }

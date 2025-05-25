@@ -22,7 +22,7 @@ export default function AttendanceForm() {
   const [timein, setTimeIn] = useState<number>(0);
   const [timeout, setTimeOut] = useState<number>(0);
   const [overtime, setOverTime] = useState<number>(0);
-  const [shiftDate, setShiftDate] = useState<Date>()
+  const [shiftDate, setShiftDate] = useState<Date>();
 
   const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
   const { userEmail, userPassword } = useAuth();
@@ -219,10 +219,6 @@ export default function AttendanceForm() {
         <main className="main-area">
           <div className="flex flex-row justify-between w-full items-center mb-7">
             <h1 className="font-bold text-2xl">Attendance</h1>
-            <p>Shift Start: {shiftStart}</p>
-            <p>Allowed Break: {allowedBreak}mins</p>
-            <p>Shift End: {shiftEnd}</p>
-            <p>Employee Sche ID {employeeScheduleID}</p>
           </div>
           <div className="attendance-UI-display">
             <div className="attendance-function">

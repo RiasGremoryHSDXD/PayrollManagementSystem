@@ -1,49 +1,35 @@
-import '../css/NavigationBar.css'
-import { FC } from 'react'
-import { useNavigate } from 'react-router-dom'
-export type View = 'overview' | 'attendance' | 'payroll' | 'leave'
+import "../css/NavigationBar.css";
+import { FC } from "react";
+import { useNavigate } from "react-router-dom";
+export type View = "overview" | "attendance" | "payroll" | "leave";
 
-interface AsideNavProp{
-  activeView: View
-  onChangeView: (View: View) => void
+interface AsideNavProp {
+  activeView: View;
+  onChangeView: (View: View) => void;
 }
 
-
-const AsideNav: FC<AsideNavProp> = ({activeView, onChangeView}) => {
-  
-  const navigate = useNavigate()
+const AsideNav: FC<AsideNavProp> = ({ activeView, onChangeView }) => {
+  const navigate = useNavigate();
 
   const handleLogOut = () => {
-    localStorage.clear()
-    navigate('/')
-  }
+    localStorage.clear();
+    navigate("/");
+  };
 
   return (
-    <nav>
-        <div>
-            <button
-              className={activeView === 'overview' ? 'active' : ''}
-              onClick={() => onChangeView('overview')}
-              >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"
-                />
-              </svg>
-              Overview
-            </button>
+    <>
+      <aside>
+        <div className="heading-container">
+          <h1 className="text-[clamp(0.875rem,1vw,1.25rem)] font-bold text-blue-600 ">
+            Employee Hub
+          </h1>
+        </div>
 
+        <div className="navigation">
+          <nav>
             <button
-              className={activeView === 'attendance' ? 'active' : ''}
-              onClick={() => onChangeView('attendance')}
+              className={activeView === "attendance" ? "active" : ""}
+              onClick={() => onChangeView("attendance")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -62,8 +48,8 @@ const AsideNav: FC<AsideNavProp> = ({activeView, onChangeView}) => {
             </button>
 
             <button
-              className={activeView === 'payroll' ? 'active' : ''}
-              onClick={() => onChangeView('payroll')}
+              className={activeView === "payroll" ? "active" : ""}
+              onClick={() => onChangeView("payroll")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -82,8 +68,8 @@ const AsideNav: FC<AsideNavProp> = ({activeView, onChangeView}) => {
             </button>
 
             <button
-              className={activeView === 'leave' ? 'active' : ''}
-              onClick={() => onChangeView('leave')}
+              className={activeView === "leave" ? "active" : ""}
+              onClick={() => onChangeView("leave")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -100,13 +86,10 @@ const AsideNav: FC<AsideNavProp> = ({activeView, onChangeView}) => {
               </svg>
               Leave Request
             </button>
-          </div>
+          </nav>
 
-          <div>
-            <button 
-              className="logOut-btn"
-              onClick={handleLogOut}
-              >
+          <div className="logOut-btn-container">
+            <button className="logOut-btn" onClick={handleLogOut}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -117,14 +100,16 @@ const AsideNav: FC<AsideNavProp> = ({activeView, onChangeView}) => {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+                  d="M15.75 9V5.25A2.25asd 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
                 />
               </svg>
-              Log Out
+              <span>Log Out</span>
             </button>
           </div>
-        </nav>
-    );
-}
+        </div>
+      </aside>
+    </>
+  );
+};
 
-export default AsideNav
+export default AsideNav;
