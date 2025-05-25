@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import "../css/AttendanceForm.css";
-import { useAuth } from "../../../auth/AuthContext";
-import { employee_details } from "../../Leaves/SupabaseFunction/EmployeeDetails";
 import { getShiftRotations } from "../SupabaseFunction/AttendanceDatabase";
 import { getAttendanceHistory } from "../SupabaseFunction/AttendanceHistory";
 import { insertClockIn } from "../SupabaseFunction/InsertClockIn";
@@ -18,7 +16,10 @@ export default function AttendanceForm() {
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-  const [employeeScheduleID, setEmployeeScheduleID] = useState<number>(
+  const [employeeName] = useState<string>(
+    localStorage.getItem("employeeName")!
+  );
+  const [employeeScheduleID] = useState<number>(
     parseInt(localStorage.getItem("employeeScheduleID")!, 10)
   );
   const [shiftStart, setShiftStart] = useState<number>(0);
@@ -28,7 +29,6 @@ export default function AttendanceForm() {
   const [isAlreadyClockOut, setIsAlreadyClockOut] = useState<boolean>(false);
 
   const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
-  const { userEmail, userPassword } = useAuth();
 
   // Clock ni siya
   useEffect(() => {
@@ -37,11 +37,9 @@ export default function AttendanceForm() {
   }, []);
 
   const displayUserInfo = async () => {
-    const result = await employee_details(userEmail, userPassword);
-    setEmployeeScheduleID(result[0].employeescheduled);
-
-    const shiftTime = await getShiftRotations(result[0].employeename);
-    const attendance = await getAttendanceHistory(result[0].employeescheduled);
+    const shiftTime = await getShiftRotations(employeeName);
+    const attendance = await getAttendanceHistory(employeeScheduleID);
+    console.log(attendance);
     attendance.sort((a: any, b: any) => {
       const dateA = new Date(`${a.attendancedate}T${a.timein || "00:00:00"}`);
       const dateB = new Date(`${b.attendancedate}T${b.timein || "00:00:00"}`);

@@ -1,6 +1,6 @@
 // src/pages/ApproveTimeOff.tsx
 import { useEffect, useState } from "react"
-import { time_off_approval } from "./TimeOfRequest/TimeOfRequest"
+import { time_off_approval } from "./SupabaseFunction/TimeOfRequest"
 import ApprovedTimeOff from "./components/ApprovedTimeOff"
 
 export type LeaveRequest = {
@@ -13,6 +13,7 @@ export type LeaveRequest = {
   leave_status: string
   employee_schedule_id: number   // ← keep this
   leave_id: number               // ← and this
+  reason: string
 }
 
 export default function ApproveTimeOff() {
@@ -29,7 +30,8 @@ export default function ApproveTimeOff() {
   const [leaveTypes, setLeaveTypes] = useState<string>('')
   const [leaveStatus, setLeaveStatus] = useState<string>('')
   const [leaveID, setLeaveID] = useState<number>(0)
-  // const [managerID] = useState(localStorage.getItem('employeeID'))
+  const [managerID] = useState<number>(parseInt(localStorage.getItem('employeeScheduleID')!, 10));
+  const [reason, SetReason] = useState<string>("")
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
@@ -41,7 +43,7 @@ export default function ApproveTimeOff() {
         let isMounted = true   // to avoid setting state on unmounted component
         const fetchData = async () => {
             try {
-                const data = await time_off_approval()
+                const data = await time_off_approval(managerID)
                 if (!data) throw new Error("No data returned")
                     const simplified = (data as any[]).map(r => ({
                     first_name: r.first_name,
@@ -53,8 +55,10 @@ export default function ApproveTimeOff() {
                     leave_status: r.leave_status,
                     employee_schedule_id: r.employee_schedule_id,
                     leave_id: r.leave_id,
+                    reason: r.reason
                 }))
                 if (isMounted) setRequests(simplified)
+                console.log(data)
             } catch (err: any) {
                 console.error(err)
                 if (isMounted) setError(err.message || "Failed to load leave requests")
@@ -96,6 +100,7 @@ export default function ApproveTimeOff() {
     setLeaveTypes(r.leave_types)
     setLeaveStatus(r.leave_status)
     setLeaveID(r.leave_id)
+    SetReason(r.reason)
     setClickRow(true)    
   }
 
@@ -184,6 +189,7 @@ export default function ApproveTimeOff() {
             leave_status={leaveStatus}
             employee_schedule_id={employeeScheduleID}
             leave_id={leaveID}
+            reason={reason}
             onApprove={() => setClickRow(false)}
             onReject={() => setClickRow(false)}
             onCancel={() => setClickRow(false)}
