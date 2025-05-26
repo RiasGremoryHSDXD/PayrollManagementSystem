@@ -4,6 +4,8 @@ import { getShiftRotations } from "../SupabaseFunction/AttendanceDatabase";
 import { getAttendanceHistory } from "../SupabaseFunction/AttendanceHistory";
 import { insertClockIn } from "../SupabaseFunction/InsertClockIn";
 import { insertClockOut } from "../SupabaseFunction/InsertClockOut";
+import { getCurrentLocation } from "./CurrentLocation";
+
 import {
   validUserClockIn,
   userOnLeave,
@@ -16,6 +18,7 @@ export default function AttendanceForm() {
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<string | null>("")
   const [employeeName] = useState<string>(
     localStorage.getItem("employeeName")!
   );
@@ -85,6 +88,16 @@ export default function AttendanceForm() {
     displayUserInfo();
   }, []);
 
+
+  const handleCurrentLoc = async () =>{
+    const location = await getCurrentLocation()
+    setCurrentLocation(location)
+  }
+
+  useEffect(() => {
+    handleCurrentLoc()
+  }, [])
+
   // Formatted time display
   const formattedDate = time.toLocaleDateString("en-PH", {
     weekday: "long",
@@ -109,7 +122,8 @@ export default function AttendanceForm() {
       if (validatedUserOnLeave) {
         setClockInLeaveError(true);
       } else {
-        await insertClockIn(employeeScheduleID, date, time);
+        const location = await getCurrentLocation();
+        await insertClockIn(employeeScheduleID, date, time, location);
         setClockInOut();
         displayUserInfo();
       }
@@ -119,7 +133,8 @@ export default function AttendanceForm() {
       if (validClockOut) {
         setIsAlreadyClockOut(true);
       } else {
-        await insertClockOut(date, employeeScheduleID, time);
+        const location = await getCurrentLocation();
+        await insertClockOut(date, employeeScheduleID, time, location);
         setClockInOut();
         displayUserInfo();
       }
