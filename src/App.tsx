@@ -1,7 +1,7 @@
 import "./css/App.css";
 import LogInForm from "./pages/LogInForm/index";
-import DashBoardEmployee from "./pages/DashBoard/Employee";
-import DashboardManager from "./pages/DashBoard/Manager";
+import DashBoardEmployee from "./pages/Dashboard/Employee"
+import DashboardManager from "./pages/Dashboard/Manager";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "../src/auth/ProtectedRoute";
 function App() {

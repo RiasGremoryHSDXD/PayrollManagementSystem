@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+
+@layer components {
+  .employee-details {
+    @apply flex flex-row items-center;
+  }
+}

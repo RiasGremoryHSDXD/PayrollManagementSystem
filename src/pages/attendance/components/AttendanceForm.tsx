@@ -18,13 +18,17 @@ export default function AttendanceForm() {
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-  const [currentLocation, setCurrentLocation] = useState<string | null>("")
   const [employeeName] = useState<string>(
     localStorage.getItem("employeeName")!
   );
   const [employeeScheduleID] = useState<number>(
     parseInt(localStorage.getItem("employeeScheduleID")!, 10)
   );
+
+  const [managerID] = useState<number>(
+    parseInt(localStorage.getItem("managerID")!, 10)
+  );
+
   const [shiftStart, setShiftStart] = useState<number>(0);
   const [shiftEnd, setshiftEnd] = useState<number>(0);
   const [allowedBreak, setshiftBreak] = useState<number>(0);
@@ -41,7 +45,7 @@ export default function AttendanceForm() {
 
   const displayUserInfo = async () => {
     const shiftTime = await getShiftRotations(employeeName);
-    const attendance = await getAttendanceHistory(employeeScheduleID);
+    const attendance = await getAttendanceHistory(employeeScheduleID, managerID);
     console.log(attendance);
     attendance.sort((a: any, b: any) => {
       const dateA = new Date(`${a.attendancedate}T${a.timein || "00:00:00"}`);
@@ -87,16 +91,6 @@ export default function AttendanceForm() {
     setClockInOut();
     displayUserInfo();
   }, []);
-
-
-  const handleCurrentLoc = async () =>{
-    const location = await getCurrentLocation()
-    setCurrentLocation(location)
-  }
-
-  useEffect(() => {
-    handleCurrentLoc()
-  }, [])
 
   // Formatted time display
   const formattedDate = time.toLocaleDateString("en-PH", {
@@ -372,8 +366,12 @@ export default function AttendanceForm() {
                           <td>{timeInValue || "--:--"}</td>
                           <td>{timeOutValue || "--:--"}</td>
                           <td>{totalHours}</td>
-                          <td>{record.timeout ? `${record.ot} mins` : "--"}</td>
-                          <td>--</td>
+                          <td>
+                            {record.over_time_work != null 
+                              ? record.over_time_work 
+                              : "--:--"}
+                          </td>
+                          <td>{record.status}</td>
                         </tr>
                       );
                     })}
