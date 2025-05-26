@@ -5,6 +5,7 @@ import { getAttendanceHistory } from "../SupabaseFunction/RetieveAttedanceEmploy
 import { employeeCompensationDetails } from '../SupabaseFunction/CompensationDetails';
 import { approvedRejectAttendance } from '../SupabaseFunction/ApprovedAttedance';
 import EmployeeLeaveHistory from './EmployeeLeaveHistory';
+import PayrollApproved from './PayrollApproved';
 
 interface DisplayInfo {
   employee_id: number;
@@ -47,6 +48,7 @@ export default function EmployeeInfo({
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
   const [clickAttendanceHistory, setClickAttendanceHistory] = useState<boolean>(true)
+  const [clickApprovalPayroll, setClickApprovalPayroll] = useState<boolean>(false)
 
   const [employeeID] = useState<number>(
     parseInt(localStorage.getItem("employeeID")!, 10)
@@ -75,11 +77,11 @@ export default function EmployeeInfo({
   useEffect(() => {
     getCompensationDetails();
     getAttendance();
-  }, [handleApprovedAttendance]);
+  }, []);
 
 
   const handleApprovedPayroll = () => {
-    alert("Approved Payroll Clicked")
+    setClickApprovalPayroll(true)
   }
 
   const statusStyles: Record<string, string> = {
@@ -292,6 +294,24 @@ export default function EmployeeInfo({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Approved Payroll*/}
+      {clickApprovalPayroll && (
+        <PayrollApproved 
+          employeeID={employee_id}
+          employeeName={`${first_name} ${last_name}`}
+          position={position_title}
+          department={department_name}
+          shift_start_time={shift_start_time}
+          shift_end_time={shift_end_time}
+          bonusRate={bonusRate}
+          commissionRate={commissionRate}
+          overTimeRate={overTimeRate}
+          baseSaraly={baseSalary}
+          managerID={employeeID}
+          onClose={() => setClickApprovalPayroll(false)} 
+        />
       )}
     </>
   );
