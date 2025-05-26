@@ -3,12 +3,14 @@ import supabase from "../../../config/SupabaseClient";
 export async function insertClockIn(
   empSchedId: number,
   date: Date,
-  time: string
+  time: string,
+  current_loc: string | null
 ) {
   const { error } = await supabase.rpc("clock_in", {
     emp_sched_id: empSchedId,
     in_date: date,
     in_time: time,
+    current_loc: current_loc
   });
 
   if (error) {
