@@ -1,60 +1,124 @@
-import '../css/DashBoardHeader.css'
+import "../css/DashBoardHeader.css";
 import { useState, useEffect } from "react";
-import { useAuth } from '../../../../auth/AuthContext';
-import { employee_details } from '../../../Leaves/SupabaseFunction/EmployeeDetails';
+import { useAuth } from "../../../../auth/AuthContext";
+import { employee_details } from "../../../Leaves/SupabaseFunction/EmployeeDetails";
+import { useNavigate } from "react-router-dom";
+import "remixicon/fonts/remixicon.css";
 
-export default function DashBoardHeader(){
-    const [time] = useState<Date>(new Date());
-    const [employeeName, setEmployeeName] = useState<string>("")
-    const [employeePosition, setEmployeePosition] = useState<string>("")
-    
-    
-    const { userEmail, userPassword } = useAuth();
+type View = "approveTimeOff" | "approveTimeSheet" | "ResolveDiscrepancies";
 
-    useEffect(() => {
+interface DashBoardHeader {
+  activeView: View;
+  onChangeView: (view: View) => void;
+}
+
+export default function DashBoardHeader({
+  activeView,
+  onChangeView,
+}: DashBoardHeader) {
+  const [time] = useState<Date>(new Date());
+  const [employeeName, setEmployeeName] = useState<string>("");
+  const [employeePosition, setEmployeePosition] = useState<string>("");
+  const [showMenu, setShowMenu] = useState(false);
+  const { userEmail, userPassword } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
     getEmployeeName();
-    }, []);
+  }, []);
 
-    const getEmployeeName = async () => {
+  const getEmployeeName = async () => {
     try {
-        const result = await employee_details(userEmail, userPassword);
-        if (result && result.length > 0) {
+      const result = await employee_details(userEmail, userPassword);
+      if (result && result.length > 0) {
         setEmployeeName(result[0].employeename);
-        setEmployeePosition(result[0].employeeposition)
-        }
+        setEmployeePosition(result[0].employeeposition);
+      }
     } catch (error) {
-        console.error("Error fetching employee details:", error);
+      console.error("Error fetching employee details:", error);
     }
-    }
+  };
 
-    // const { userEmail, userPassword } = useAuth()
-    const formattedDate = time.toLocaleDateString("en-PH", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    }); 
+  const formattedDate = time.toLocaleDateString("en-PH", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
-    return(
-            <header className="header-area">
-                <div className="dashboard">
-                    <h1>Dashboard</h1>
-                    <p>{formattedDate}</p>
-                </div>
-                
-                <div className="profile">
-                    <img
-                    src="public/person_icon.svg"
-                    alt="person_icon"
-                    className="w-[20px] h-[20px] m-5 hover:to-blue-700"
-                    />
-                    <div className="profile-name">
-                        {employeeName}
-                    <p className=" font-medium text-gray-800 text-sm">
-                    </p>
-                    <p className="text-gray-600 text-sm">{employeePosition}</p>
-                    </div>
-                </div>
-        </header>
-    )
+  const handleViewChange = (view: View) => {
+    onChangeView(view);
+    setShowMenu(false);
+  };
+  const handleLogOut = () => {
+    localStorage.clear();
+    navigate("/");
+  };
+
+  return (
+    <header className="header-area">
+      <div className="dashboard">
+        <div className="dashboard-left">
+          <div className="nav_toggle" onClick={() => setShowMenu(!showMenu)}>
+            <i
+              className={`ri-menu-line nav_burger ${
+                showMenu ? "opacity-0" : "opacity-100"
+              }`}
+            ></i>
+            <i
+              className={`ri-close-line nav_close ${
+                showMenu ? "opacity-100" : "opacity-0"
+              }`}
+            ></i>
+          </div>
+          <h1 className="text-[clamp(0.875rem,2vw,1.125rem)] font-bold hidden xl:block text-gray-700">
+            Dashboard
+          </h1>
+          <p className="text-[clamp(0.5rem,1.5vw,1rem)] hidden xl:block text-gray-700">
+            {formattedDate}
+          </p>
+        </div>
+
+        <div className="dashboard-right">
+          <div>
+            <img src="/person_icon.svg" alt="person_icon" />
+          </div>
+          <div className="profile-name">
+            <p className="text-[clamp(0.75rem,2vw,1rem)] font-medium text-gray-700">
+              {employeeName}
+            </p>
+            <p className="text-[clamp(0.75rem,1.5vw,0.875rem)] text-gray-500">
+              {employeePosition}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {showMenu && (
+        <div className="dropdown-container">
+          <button
+            className={activeView === "approveTimeOff" ? "active" : ""}
+            onClick={() => handleViewChange("approveTimeOff")}
+          >
+            Time Off
+          </button>
+          <button
+            className={activeView === "approveTimeSheet" ? "active" : ""}
+            onClick={() => handleViewChange("approveTimeSheet")}
+          >
+            Time Sheet
+          </button>
+          <button
+            className={activeView === "ResolveDiscrepancies" ? "active" : ""}
+            onClick={() => handleViewChange("ResolveDiscrepancies")}
+          >
+            Discrepancy
+          </button>
+          <button className="text-red-600" onClick={handleLogOut}>
+            Log Out
+          </button>
+        </div>
+      )}
+    </header>
+  );
 }

@@ -4,6 +4,8 @@ import { getShiftRotations } from "../SupabaseFunction/AttendanceDatabase";
 import { getAttendanceHistory } from "../SupabaseFunction/AttendanceHistory";
 import { insertClockIn } from "../SupabaseFunction/InsertClockIn";
 import { insertClockOut } from "../SupabaseFunction/InsertClockOut";
+import { getCurrentLocation } from "./CurrentLocation";
+
 import {
   validUserClockIn,
   userOnLeave,
@@ -16,12 +18,19 @@ export default function AttendanceForm() {
   const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+
   const [employeeName] = useState<string>(
     localStorage.getItem("employeeName")!
   );
   const [employeeScheduleID] = useState<number>(
     parseInt(localStorage.getItem("employeeScheduleID")!, 10)
   );
+
+  const [managerID] = useState<number>(
+    parseInt(localStorage.getItem("managerID")!, 10)
+  );
+
   const [shiftStart, setShiftStart] = useState<number>(0);
   const [shiftEnd, setshiftEnd] = useState<number>(0);
   const [allowedBreak, setshiftBreak] = useState<number>(0);
@@ -38,7 +47,10 @@ export default function AttendanceForm() {
 
   const displayUserInfo = async () => {
     const shiftTime = await getShiftRotations(employeeName);
-    const attendance = await getAttendanceHistory(employeeScheduleID);
+    const attendance = await getAttendanceHistory(
+      employeeScheduleID,
+      managerID
+    );
     console.log(attendance);
     attendance.sort((a: any, b: any) => {
       const dateA = new Date(`${a.attendancedate}T${a.timein || "00:00:00"}`);
@@ -109,7 +121,8 @@ export default function AttendanceForm() {
       if (validatedUserOnLeave) {
         setClockInLeaveError(true);
       } else {
-        await insertClockIn(employeeScheduleID, date, time);
+        const location = await getCurrentLocation();
+        await insertClockIn(date, employeeScheduleID, time, location);
         setClockInOut();
         displayUserInfo();
       }
@@ -119,7 +132,8 @@ export default function AttendanceForm() {
       if (validClockOut) {
         setIsAlreadyClockOut(true);
       } else {
-        await insertClockOut(date, employeeScheduleID, time);
+        const location = await getCurrentLocation();
+        await insertClockOut(date, employeeScheduleID, time, location);
         setClockInOut();
         displayUserInfo();
       }
@@ -130,7 +144,7 @@ export default function AttendanceForm() {
     <div className="main-container">
       {clockInLeaveError && (
         <div
-          className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
+          className="fixed inset-0 flex items-center justify-center"
           role="alert"
         >
           <div className="bg-red-50 w-80 p-6 rounded-xl shadow-lg border-2 border-red-500">
@@ -178,10 +192,96 @@ export default function AttendanceForm() {
         </div>
       )}
 
+      {selectedRecord && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setSelectedRecord(null)}
+              className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-2xl"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h3 className="text-md md:text-xl font-medium md:font-semibold mb-7 text-center">
+              Attendance Details
+            </h3>
+            <div className="space-y-2 text-gray-700 text-sm">
+              <p>
+                <span>Date:</span>{" "}
+                {new Date(selectedRecord.attendancedate).toLocaleDateString(
+                  "en-PH",
+                  {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}
+              </p>
+              <p>
+                <span>Clock In:</span> {selectedRecord.timein || "Not recorded"}
+              </p>
+              <p>
+                <span>Clock Out:</span>{" "}
+                {selectedRecord.timeout || "Not recorded"}
+              </p>
+              <p>
+                <span>Total Hours:</span>{" "}
+                {(() => {
+                  if (!selectedRecord.timein || !selectedRecord.timeout)
+                    return "—";
+                  const [ih, im] = selectedRecord.timein.split(":").map(Number);
+                  const [oh, om] = selectedRecord.timeout
+                    .split(":")
+                    .map(Number);
+                  const inD = new Date();
+                  inD.setHours(ih, im, 0);
+                  const outD = new Date();
+                  outD.setHours(oh, om, 0);
+                  const mins = Math.round(
+                    (outD.getTime() - inD.getTime()) / 60000
+                  );
+                  return `${Math.floor(mins / 60)} hrs ${mins % 60} mins`;
+                })()}
+              </p>
+              <p>
+                <span>OT:</span>{" "}
+                {selectedRecord.ot ? `${selectedRecord.ot} mins` : "None"}
+              </p>
+              <p>
+                <span>Status:</span>{" "}
+                <span
+                  className={`inline-flex items-center px-2 py-1 md:px-3 md:py-2 rounded-full text-xs font-medium ${
+                    selectedRecord.status === "Approved"
+                      ? "bg-green-100 text-green-800"
+                      : selectedRecord.status === "Pending"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : selectedRecord.status === "Rejected"
+                      ? "bg-red-100 text-red-800"
+                      : selectedRecord.status === "Cancelled"
+                      ? "bg-gray-100 text-gray-800"
+                      : "bg-blue-100 text-blue-800"
+                  }`}
+                >
+                  {selectedRecord.status}
+                </span>
+              </p>
+              <p>
+                <span>Clock-In Location:</span> {selectedRecord.location}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="right-area">
         {/* Main content */}
-        <main className="main-area bg-gray-200">
-          <div className="flex flex-row justify-between w-full items-center mb-4 md:mb-7">
+        <main className="main-area bg-gray-100">
+          <div className="flex flex-row justify-between w-full items-center mb-1 lg:mb-3 xl:mb-4 md:mb-7">
             <h1 className="font-semibold text-xl md:font-bold md:text-2xl">
               Attendance
             </h1>
@@ -290,18 +390,26 @@ export default function AttendanceForm() {
                 {isClockedIn ? " Clock Out" : "Clock In"}
               </button>
             </div>
+
+            {/* Attendance history */}
             <div className="attendance-history">
-              <h2 className="text-lg font-semibold opacity-80 mb-2">
+              <h2 className="text-md sm:text-lg font-semibold opacity-80 mb-2">
                 Attendance History
               </h2>
-              <div className="table-history-container">
-                <table className="table-history">
-                  <thead>
+
+              <div
+                className="table-history-container overflow-y-auto"
+                style={{
+                  maxHeight: "calc(68vh - 250px)",
+                }}
+              >
+                <table className="table-history min-w-full table-auto">
+                  <thead className="sticky top-0 bg-gray-100 z-10 shadow-sm">
                     <tr>
                       <th>DATE</th>
-                      <th>DAY</th>
-                      <th>CLOCK IN</th>
-                      <th>CLOCK OUT</th>
+                      <th className="hidden md:table-cell">DAY</th>
+                      <th className="hidden md:table-cell">CLOCK IN</th>
+                      <th className="hidden md:table-cell">CLOCK OUT</th>
                       <th>TOTAL HOURS</th>
                       <th>OT</th>
                       <th>STATUS</th>
@@ -351,14 +459,43 @@ export default function AttendanceForm() {
                       })();
 
                       return (
-                        <tr key={index}>
+                        <tr
+                          key={index}
+                          className="hover:bg-blue-50 cursor-pointer"
+                          onClick={() => setSelectedRecord(record)}
+                        >
                           <td>{formattedDate}</td>
-                          <td>{dayOfWeek}</td>
-                          <td>{timeInValue || "--:--"}</td>
-                          <td>{timeOutValue || "--:--"}</td>
+                          <td className="hidden md:table-cell">{dayOfWeek}</td>
+                          <td className="hidden md:table-cell">
+                            {timeInValue || "--:--"}
+                          </td>
+                          <td className="hidden md:table-cell">
+                            {timeOutValue || "--:--"}
+                          </td>
                           <td>{totalHours}</td>
-                          <td>{record.timeout ? `${record.ot} mins` : "--"}</td>
-                          <td>--</td>
+                          <td>
+                            {" "}
+                            {record.over_time_work != null
+                              ? record.over_time_work
+                              : "--:--"}
+                          </td>
+                          <td>
+                            <span
+                              className={`inline-flex items-center px-2 py-1 md:px-3 md:py-2 rounded-full text-xs font-medium ${
+                                record.status === "Approved"
+                                  ? "bg-green-100 text-green-800"
+                                  : record.status === "Pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : record.status === "Rejected"
+                                  ? "bg-red-100 text-red-800"
+                                  : record.status === "Cancelled"
+                                  ? "bg-gray-100 text-gray-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
+                            >
+                              {record.status}
+                            </span>
+                          </td>
                         </tr>
                       );
                     })}

@@ -47,7 +47,7 @@ export default function index() {
   return (
     <div className="flex ">
       <AsideNavProp activeView={activeView} onChangeView={setActiveView} />
-      <div className="felx h-screen w-full overflow-hidden">
+      <div className="felx h-screen w-full xl:overflow-hidden overflow-auto">
         <DashBoardHeader activeView={activeView} onChangeView={setActiveView} />
         {renderContent()}
       </div>

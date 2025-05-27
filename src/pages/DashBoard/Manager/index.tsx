@@ -1,12 +1,14 @@
-import AsideNavProp, { View } from '../Manager/components/NavigationBar'
-import DashBoardHeader from './components/DashBoardHeader';
-import ApproveTimeOff from '../../ApproveTimeOff/index'
-import ApproveTimeSheet from '../../ApproveTimeSheet/index'
-import ResolveDiscrepancies from '../../ResolveDiscrepancies/index'
+import AsideNavProp, { View } from "../Manager/components/NavigationBar";
+import DashBoardHeader from "./components/DashBoardHeader";
+import ApproveTimeOff from "../../ApproveTimeOff/index";
+import ApproveTimeSheet from "../../ApproveTimeSheet/index";
+import ResolveDiscrepancies from "../../ResolveDiscrepancies/index";
 import { useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 export default function index() {
   const [activeView, setActiveView] = useState<View>("approveTimeOff");
+
+  const navigate = useNavigate();
 
   const renderContent = () => {
     switch (activeView) {
@@ -24,8 +26,8 @@ export default function index() {
   return (
     <div className="flex ">
       <AsideNavProp activeView={activeView} onChangeView={setActiveView} />
-      <div>
-        <DashBoardHeader />
+      <div className="felx h-screen w-full xl:overflow-hidden overflow-auto">
+        <DashBoardHeader activeView={activeView} onChangeView={setActiveView} />
         {renderContent()}
       </div>
     </div>
