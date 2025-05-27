@@ -37,16 +37,16 @@ export default function ListOfEmployee() {
       <h2 className="text-lg md:text-xl lg:text-2xl font-semibold mb-4">
         List of Employees
       </h2>
-      <table className="min-w-full bg-white border border-gray-300 rounded-lg">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="py-2 px-3 lg:px-4 text-sm md:text-lg lg:text-xl text-left border-b">
+      <table className="min-w-full bg-white border border-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-4 py-2 text-left text-sm md:text-lg font-medium text-gray-700">
               Name
             </th>
-            <th className="py-2 px-3 lg:px-4 text-sm md:text-lg lg:text-xl text-left border-b">
+            <th className="px-4 py-2  text-left text-sm md:text-lg font-medium text-gray-700">
               Position
             </th>
-            <th className="py-2 px-3 lg:px-4 text-sm md:text-lg lg:text-xl text-left border-b">
+            <th className="px-4 py-2  text-left text-sm md:text-lg font-medium text-gray-700">
               Department
             </th>
           </tr>
@@ -58,13 +58,13 @@ export default function ListOfEmployee() {
               className="hover:bg-gray-50 cursor-pointer"
               onClick={() => setSelectedEmployee(emp)}
             >
-              <td className="py-2 px-4 border-b text-sm md:text-lg lg:text-xl">
+              <td className="px-4 py-2 text-sm lg:text-base text-gray-800 ">
                 {emp.first_name} {emp.last_name}
               </td>
-              <td className="py-2 px-4 border-b text-sm md:text-lg lg:text-xl">
+              <td className="px-4 py-2 text-sm lg:text-base text-gray-800 ">
                 {emp.position_title}
               </td>
-              <td className="py-2 px-4 border-b text-sm md:text-lg lg:text-xl">
+              <td className="px-4 py-2  text-sm lg:text-base text-gray-800  ">
                 {emp.department_name}
               </td>
             </tr>
