@@ -1,4 +1,3 @@
-// import AsideNavProp, { View } from './components/NavigationBar.'
 import AsideNavProp, { View } from '../../DashBoard/Manager/components/NavigationBar'
 import DashBoardHeader from '../../DashBoard/Manager/components/DashBoardHeader';
 import ApproveTimeOff from '../../ApproveTimeOff/index'

@@ -1,8 +1,8 @@
 import supabase from "../../../config/SupabaseClient";
 
 export async function insertClockIn(
-  empSchedId: number,
   date: Date,
+  empSchedId: number,
   time: string,
   current_loc: string | null
 ) {
