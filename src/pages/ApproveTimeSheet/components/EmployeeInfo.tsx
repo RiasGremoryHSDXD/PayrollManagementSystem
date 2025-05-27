@@ -77,7 +77,8 @@ export default function EmployeeInfo({
   const getAttendance = async () => {
     const records = await getAttendanceHistory(
       employee_schedule_id,
-      employeeID
+      employeeID,
+      null
     );
     setAttendance(records || []);
   };
@@ -87,6 +88,7 @@ export default function EmployeeInfo({
     status: string
   ) => {
     await approvedRejectAttendance(attendance_id, status);
+    getAttendance();
     setSelectedRecord(null);
   };
 
@@ -103,6 +105,7 @@ export default function EmployeeInfo({
     Approved: " bg-green-100 text-green-800",
     Rejected: "bg-red-100   text-red-800",
   };
+
 
   return (
     <>
@@ -189,7 +192,7 @@ export default function EmployeeInfo({
 
         {/* Right Content - Attendance */}
 
-        {clickAttendanceHistory && (
+        {clickAttendanceHistory && (  
           <div className="lg:w-2/3 p-8 overflow-y-auto bg-gray-50">
             <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold lg:font-bold text-gray-800 mb-6">
               Attendance History
@@ -368,6 +371,7 @@ export default function EmployeeInfo({
           overTimeRate={overTimeRate}
           baseSaraly={baseSalary}
           managerID={employeeID}
+          employee_schedule_id={employee_schedule_id}
           onClose={() => setClickApprovalPayroll(false)} 
         />
       )}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   CheckCircle,
   User,
@@ -13,10 +13,16 @@ import {
   Plus,
   Target,
   Star,
+  Calendar,
 } from "lucide-react";
 import { getTotalWorkAndOvertime } from "../SupabaseFunction/TotalWorkOverTime";
 import { getEmployeeDeductions } from "../SupabaseFunction/DeductionDetails";
 import { getPerformanceMetrics } from "../SupabaseFunction/PerformanceMetric";
+import { getCurrentLeaveDaysUsed } from "../SupabaseFunction/TotalLeaveRequest"; 
+import { getApprovedAttendanceIDs, getRejectedAttendanceIDs } from "../SupabaseFunction/AttedanceIDCount";
+import { getPayableLeaveIDs } from "../SupabaseFunction/LeaveIDPaid";
+import { markAttendancePaid } from "../SupabaseFunction/MarkAttendancePaid";
+import { applyLeavePayments } from "../SupabaseFunction/ApplyLeavePayment";
 
 interface PayrollApprovedProps {
   employeeID: number | null;
@@ -30,6 +36,7 @@ interface PayrollApprovedProps {
   overTimeRate: number;
   baseSaraly: number;
   managerID: number;
+  employee_schedule_id: number
   onClose: () => void;
 }
 
@@ -45,6 +52,7 @@ export default function PayrollApproved({
   overTimeRate,
   baseSaraly,
   managerID,
+  employee_schedule_id,
   onClose
 }: PayrollApprovedProps) {
 
@@ -69,14 +77,16 @@ export default function PayrollApproved({
   const [performanceFeedback, setPerformanceFeedback] = useState<string>('');
   const [goals, setGoals] = useState<string>('');
   const [totalBonuses, setTotalBonuses] = useState<string>('0');
+  const [totalLeaveUsed, setTotalLeave] = useState<number>(0)
   
   const formatCurrency = (amount: number | string) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-PH', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'PHP'
     }).format(numAmount);
   };
+  
 
   const parseTimeToHours = (timeString: string) => {
     if (!timeString) return 0;
@@ -84,34 +94,36 @@ export default function PayrollApproved({
     return hours + (minutes / 60);
   };
 
+  const calculateLeavePayment = () => {
+    // baseSaraly is already an hourly rate
+    return totalLeaveUsed * 8 * baseSaraly; // 8 hours per day * hourly rate
+  };
+
+
   const calculateGrossPay = () => {
     const regularHours = parseTimeToHours(totalWorkTime);
     const overtimeHours = parseTimeToHours(totalOverTime);
     
-    const hourlyRate = baseSaraly; // Assuming 40 hours/week, 4 weeks/month
-    const regularPay = regularHours * hourlyRate;
-    const overtimePay = overtimeHours * hourlyRate * (overTimeRate / 100 + 1);
+    const regularPay = regularHours * baseSaraly; // baseSaraly is hourly rate
+    const overtimePay = overtimeHours * baseSaraly * (overTimeRate / 100 + 1);
     const bonusPay = baseSaraly * (bonusRate / 100);
     const commissionPay = baseSaraly * (commissionRate / 100);
     const performancePay = baseSaraly * ((performanceMetrics / 100) / 100); // Performance-based pay
-    console.log(additionalBenefitsAmount)
-    console.log(outstandingLoansOriginal)
-    console.log(outstandingLoansPrincipalRepaid)
-    console.log(outstandingLoansInterestRate)
+    const leavePayment = calculateLeavePayment();
     
-    return regularPay + overtimePay + bonusPay + commissionPay + performancePay;
+    return regularPay + overtimePay + bonusPay + commissionPay + performancePay + leavePayment;
   };
 
   const calculateTotalBonuses = () => {
     const overtimeHours = parseTimeToHours(totalOverTime);
     
-    const hourlyRate = baseSaraly;
-    const overtimePay = overtimeHours * hourlyRate * (overTimeRate / 100 + 1);
+    const overtimePay = overtimeHours * baseSaraly * (overTimeRate / 100 + 1);
     const bonusPay = baseSaraly * (bonusRate / 100);
     const commissionPay = baseSaraly * (commissionRate / 100);
     const performancePay = baseSaraly * (performanceMetrics / 100);
+    const leavePayment = calculateLeavePayment();
     
-    return overtimePay + bonusPay + commissionPay + performancePay;
+    return overtimePay + bonusPay + commissionPay + performancePay + leavePayment;
   };
 
   const calculateNetPay = () => {
@@ -121,7 +133,7 @@ export default function PayrollApproved({
   };
 
   const handleTotalTimeRelated = async () => {
-    const result = await getTotalWorkAndOvertime(employeeID, managerID)
+    const result = await getTotalWorkAndOvertime(employee_schedule_id, managerID)
     if (result && result.length > 0) {
       setTotalWorkTime(result[0].total_work_time || '0:00')
       setOverTime(result[0].total_over_time || '0:00')
@@ -129,7 +141,7 @@ export default function PayrollApproved({
   }
 
   const handlePerformanceMetric = async () => {
-    const result = await getPerformanceMetrics(employeeID);
+    const result = await getPerformanceMetrics(employee_schedule_id);
     
     if (!result || result.length === 0) return;
 
@@ -141,7 +153,7 @@ export default function PayrollApproved({
   };
 
   const handleDeductionDetail = async () => {
-    const result = await getEmployeeDeductions(employeeID);
+    const result = await getEmployeeDeductions(employee_schedule_id);
     
     if (!result || result.length === 0) return;
 
@@ -162,6 +174,7 @@ export default function PayrollApproved({
     setTotalDeduction(d.total_deduction || '0');
   };
 
+
   const formatTime = (time: string) => {
     return new Date(`1970-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -180,7 +193,21 @@ export default function PayrollApproved({
     handleTotalTimeRelated()
     handleDeductionDetail()
     handlePerformanceMetric()
+    handleLeaveData()
   }, [])
+
+    const handleLeaveData = async () => {
+    if (employee_schedule_id) {
+      const now = new Date();
+      const year  = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day   = String(now.getDate()).padStart(2, '0');
+
+      const today = `${year}-${month}-${day}`;
+      const leaveDaysUsed = await getCurrentLeaveDaysUsed(employee_schedule_id, today);
+      setTotalLeave(leaveDaysUsed || 0);
+    }
+  };
 
   // Calculate total bonuses when relevant data changes
   useEffect(() => {
@@ -188,10 +215,28 @@ export default function PayrollApproved({
       const bonuses = calculateTotalBonuses();
       setTotalBonuses(bonuses.toString());
     }
-  }, [totalWorkTime, totalOverTime, baseSaraly, bonusRate, commissionRate, overTimeRate, performanceMetrics])
+  }, [totalWorkTime, totalOverTime, baseSaraly, bonusRate, commissionRate, overTimeRate, performanceMetrics, totalLeaveUsed])
 
   const grossPay = calculateGrossPay();
   const netPay = calculateNetPay();
+  const leavePayment = calculateLeavePayment();
+
+  const handlePayrollEmployee = async () => {
+    if (!employee_schedule_id) return;
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+    const approvedRows = await getApprovedAttendanceIDs(employee_schedule_id, managerID);
+    const leaveRows    = await getPayableLeaveIDs(employee_schedule_id, today);
+    const approvedIds = (approvedRows || []).map((r: { attendanceid: number }) => r.attendanceid);
+    const leaveIds    = leaveRows || []; 
+
+    await markAttendancePaid(approvedIds);
+    await applyLeavePayments(employee_schedule_id, today)
+
+    alert("Payroll Are successfully")
+  };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -334,6 +379,46 @@ export default function PayrollApproved({
                     {formatTime(shift_end_time)}
                   </span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Leave Summary */}
+          <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 border border-cyan-100">
+            <div className="flex items-center mb-4">
+              <Calendar className="w-6 h-6 text-cyan-600 mr-3" />
+              <h4 className="text-lg font-semibold text-gray-800">
+                Leave Summary
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white rounded-lg p-4 border border-cyan-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-600">
+                    Total Leave Days Used
+                  </span>
+                  <Calendar className="w-4 h-4 text-cyan-600" />
+                </div>
+                <p className="text-2xl font-bold text-cyan-600 mb-1">
+                  {totalLeaveUsed} {totalLeaveUsed === 1 ? 'day' : 'days'}
+                </p>
+                <p className="text-xs text-gray-500">Approved leave requests</p>
+              </div>
+
+              <div className="bg-white rounded-lg p-4 border border-green-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-600">
+                    Leave Payment
+                  </span>
+                  <DollarSign className="w-4 h-4 text-green-600" />
+                </div>
+                <p className="text-2xl font-bold text-green-600 mb-1">
+                  {formatCurrency(leavePayment)}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {totalLeaveUsed} days × 8 hours × ₱{baseSaraly.toFixed(2)}/hr
+                </p>
               </div>
             </div>
           </div>
@@ -545,21 +630,10 @@ export default function PayrollApproved({
               Close
             </button>
             <button
-              onClick={() => {
-                window.print();
-              }}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
-            >
-              Print Payroll
-            </button>
-            <button
-              onClick={() => {
-                // Add download functionality here
-                console.log("Download payroll details");
-              }}
+              onClick={handlePayrollEmployee}
               className="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium"
             >
-              Download PDF
+              Approved Payroll
             </button>
           </div>
         </div>
