@@ -1,5 +1,6 @@
 {
   "name": "payroll-management-system",
+  "homepage": "https://RiasGremoryHSDXD.github.io/PayrollManagementSystem/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,11 +8,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/vite": "^4.1.4",
+    "gh-pages": "^6.3.0",
     "lucide-react": "^0.510.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
