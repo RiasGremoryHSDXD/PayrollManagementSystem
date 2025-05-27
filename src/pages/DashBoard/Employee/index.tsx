@@ -4,13 +4,11 @@ import AttendanceForm from "../../attendance/components/AttendanceForm";
 import PayrollPage from "../../Payroll/components/payroll";
 import LeaveForm from "../../Leaves/index";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export default function index() {
   const [activeView, setActiveView] = useState<View>("attendance");
   const [isPositionMananger, setIsPositionMananger] = useState<boolean>(true);
 
-  const navigate = useNavigate();
   useEffect(() => {
     const user_position = localStorage.getItem("employeePosition");
 

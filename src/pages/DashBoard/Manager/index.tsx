@@ -3,7 +3,7 @@ import DashBoardHeader from './components/DashBoardHeader';
 import ApproveTimeOff from '../../ApproveTimeOff/index'
 import ApproveTimeSheet from '../../ApproveTimeSheet/index'
 import ResolveDiscrepancies from '../../ResolveDiscrepancies/index'
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function index() {
   const [activeView, setActiveView] = useState<View>("approveTimeOff");

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { CheckCircle, User, MapPin, Clock, DollarSign, Award, TrendingUp, Zap, Calculator, Minus, Plus, Target, Star, TrendingDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CheckCircle, User, MapPin, Clock, DollarSign, Award, TrendingUp, Zap, Calculator, Minus, Plus, Target, Star } from 'lucide-react';
 import { getTotalWorkAndOvertime } from '../SupabaseFunction/TotalWorkOverTime';
 import { getEmployeeDeductions } from '../SupabaseFunction/DeductionDetails';
 import { getPerformanceMetrics } from '../SupabaseFunction/PerformaceMetric';
@@ -80,6 +80,10 @@ export default function PayrollApproved({
     const bonusPay = baseSaraly * (bonusRate / 100);
     const commissionPay = baseSaraly * (commissionRate / 100);
     const performancePay = baseSaraly * ((performanceMetrics / 100) / 100); // Performance-based pay
+    console.log(additionalBenefitsAmount)
+    console.log(outstandingLoansOriginal)
+    console.log(outstandingLoansPrincipalRepaid)
+    console.log(outstandingLoansInterestRate)
     
     return regularPay + overtimePay + bonusPay + commissionPay + performancePay;
   };

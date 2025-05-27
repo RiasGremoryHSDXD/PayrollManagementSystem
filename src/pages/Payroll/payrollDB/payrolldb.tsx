@@ -19,7 +19,6 @@ export interface PayrollEntry {
 }
 
 export async function fetchPayrollData(): Promise<PayrollEntry[]> {
-  const employee = 1; // Can be made dynamic
 
   const [
     { data: compPlan },

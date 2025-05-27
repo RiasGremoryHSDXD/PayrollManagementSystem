@@ -55,6 +55,9 @@ export default function AttendanceForm() {
 
     setAttendanceHistory(attendance);
 
+    console.log(shiftStart)
+    console.log(shiftEnd)
+    console.log(allowedBreak)
     setShiftStart(shiftTime[0].starttime);
     setshiftEnd(shiftTime[0].endtime);
     setshiftBreak(shiftTime[0].breakminutes);
