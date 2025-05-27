@@ -14,7 +14,8 @@ export async function insertClockIn(
   });
 
   if (error) {
-    console.error("Clock-In Error:", error);
+    console.error("Clock-Out Error:", error);
   }
+
   return;
 }

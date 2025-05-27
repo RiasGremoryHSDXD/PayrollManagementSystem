@@ -8,9 +8,9 @@ export async function insertClockOut(current_date : Date, employee_schedule_id: 
             current_loc: current_loction
         })
 
-    if(error){
-        console.error("Clock-Out Error:", error);
-    }
+  if (error) {
+    console.error("Clock-Out Error:", error);
+  }
 
-    return;
+  return;
 }

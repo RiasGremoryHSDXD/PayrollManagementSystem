@@ -1,9 +1,9 @@
-import ListOfEmployee from "./components/ListOfEmployee"
+import ListOfEmployee from "./components/ListOfEmployee";
 
 export default function index() {
   return (
     <div>
-      <ListOfEmployee/>
+      <ListOfEmployee />
     </div>
-  )
+  );
 }

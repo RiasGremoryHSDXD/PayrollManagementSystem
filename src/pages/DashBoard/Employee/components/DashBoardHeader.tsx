@@ -71,10 +71,10 @@ export default function DashBoardHeader({
               }`}
             ></i>
           </div>
-          <h1 className="text-[clamp(0.875rem,2vw,1.125rem)] hidden md:block text-gray-700">
+          <h1 className="text-[clamp(0.875rem,2vw,1.125rem)] font-bold hidden xl:block text-gray-700">
             Dashboard
           </h1>
-          <p className="text-[clamp(0.5rem,1.5vw,1rem)] hidden md:block text-gray-700">
+          <p className="text-[clamp(0.5rem,1.5vw,1rem)] hidden xl:block text-gray-700">
             {formattedDate}
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function DashBoardHeader({
       </div>
 
       {showMenu && (
-        <div className="dropdown-container md:hidden">
+        <div className="dropdown-container">
           <button
             className={activeView === "attendance" ? "active" : ""}
             onClick={() => handleViewChange("attendance")}

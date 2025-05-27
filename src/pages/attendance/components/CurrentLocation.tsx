@@ -20,10 +20,10 @@ export function getCurrentLocation(): Promise<string | null> {
 
           if (data.results.length > 0) {
             const comps = data.results[0].components;
-            const city     = comps.city    || "Unknown City";
-            const postal   = comps.postcode|| "Unknown Postal";
-            const province = comps.region  || "Unknown Province";
-            const country  = comps.country || "Unknown Country";
+            const city = comps.city || "Unknown City";
+            const postal = comps.postcode || "Unknown Postal";
+            const province = comps.region || "Unknown Province";
+            const country = comps.country || "Unknown Country";
 
             const locationString = `${city}, ${postal}, ${province}, ${country}`;
             return resolve(locationString);
