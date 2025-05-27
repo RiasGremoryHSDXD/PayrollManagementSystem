@@ -1,24 +1,13 @@
-<<<<<<< HEAD
-import AsideNavProp, { View } from '../Manager/components/NavigationBar'
-import DashBoardHeader from './components/DashBoardHeader';
+// import AsideNavProp, { View } from './components/NavigationBar.'
+import AsideNavProp, { View } from '../../DashBoard/Manager/components/NavigationBar'
+import DashBoardHeader from '../../DashBoard/Manager/components/DashBoardHeader';
 import ApproveTimeOff from '../../ApproveTimeOff/index'
 import ApproveTimeSheet from '../../ApproveTimeSheet/index'
 import ResolveDiscrepancies from '../../ResolveDiscrepancies/index'
 import { useState } from "react";
 
-=======
-import AsideNavProp, { View } from "../Manager/components/NavigationBar";
-import DashBoardHeader from "./components/DashBoardHeader";
-import ApproveTimeOff from "../../ApproveTimeOff/index";
-import ApproveTimeSheet from "../../ApproveTimeSheet/index";
-import ResolveDiscrepancies from "../../ResolveDiscrepancies/index";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
->>>>>>> 656d3b5cb5d3e1dee4aa156bc02a5491294d48cd
 export default function index() {
   const [activeView, setActiveView] = useState<View>("approveTimeOff");
-
-  const navigate = useNavigate();
 
   const renderContent = () => {
     switch (activeView) {

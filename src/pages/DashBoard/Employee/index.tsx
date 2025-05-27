@@ -1,5 +1,5 @@
-import AsideNavProp, { View } from "../Employee/components/NavigationBar";
-import DashBoardHeader from "./components/DashBoardHeader";
+import AsideNavProp, { View } from "../../DashBoard/Employee/components/NavigationBar";
+import DashBoardHeader from "../../DashBoard/Employee/components/DashBoardHeader";
 import AttendanceForm from "../../attendance/components/AttendanceForm";
 import PayrollPage from "../../Payroll/components/payroll";
 import LeaveForm from "../../Leaves/index";
