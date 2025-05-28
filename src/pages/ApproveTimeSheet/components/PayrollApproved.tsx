@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CheckCircle,
   User,
@@ -19,10 +19,12 @@ import { getTotalWorkAndOvertime } from "../SupabaseFunction/TotalWorkOverTime";
 import { getEmployeeDeductions } from "../SupabaseFunction/DeductionDetails";
 import { getPerformanceMetrics } from "../SupabaseFunction/PerformanceMetric";
 import { getCurrentLeaveDaysUsed } from "../SupabaseFunction/TotalLeaveRequest"; 
-import { getApprovedAttendanceIDs, getRejectedAttendanceIDs } from "../SupabaseFunction/AttedanceIDCount";
+import { getApprovedAttendanceIDs } from "../SupabaseFunction/AttedanceIDCount";
 import { getPayableLeaveIDs } from "../SupabaseFunction/LeaveIDPaid";
+import { getAttendanceDateRange } from "../SupabaseFunction/AttendanceDataRange";
 import { markAttendancePaid } from "../SupabaseFunction/MarkAttendancePaid";
 import { applyLeavePayments } from "../SupabaseFunction/ApplyLeavePayment";
+import { createPayroll } from "../SupabaseFunction/InsertJson";
 
 interface PayrollApprovedProps {
   employeeID: number | null;
@@ -79,7 +81,7 @@ export default function PayrollApproved({
   const [totalBonuses, setTotalBonuses] = useState<string>('0');
   const [totalLeaveUsed, setTotalLeave] = useState<number>(0)
   
-  const formatCurrency = (amount: number | string) => {
+const formatCurrency = (amount: number | string) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
     return new Intl.NumberFormat('en-PH', {
       style: 'currency',
@@ -99,30 +101,32 @@ export default function PayrollApproved({
     return totalLeaveUsed * 8 * baseSaraly; // 8 hours per day * hourly rate
   };
 
-
   const calculateGrossPay = () => {
     const regularHours = parseTimeToHours(totalWorkTime);
     const overtimeHours = parseTimeToHours(totalOverTime);
     
     const regularPay = regularHours * baseSaraly; // baseSaraly is hourly rate
     const overtimePay = overtimeHours * baseSaraly * (overTimeRate / 100 + 1);
-    const bonusPay = baseSaraly * (bonusRate / 100);
-    const commissionPay = baseSaraly * (commissionRate / 100);
-    const performancePay = baseSaraly * ((performanceMetrics / 100) / 100); // Performance-based pay
+    const bonusPay = regularPay * bonusRate ;
+    const commissionPay = regularPay * commissionRate;
+    const performancePay = regularPay * performanceMetrics / 100; // Performance-based pay
     const leavePayment = calculateLeavePayment();
-    
+
     return regularPay + overtimePay + bonusPay + commissionPay + performancePay + leavePayment;
   };
 
   const calculateTotalBonuses = () => {
+    const regularHours = parseTimeToHours(totalWorkTime);
     const overtimeHours = parseTimeToHours(totalOverTime);
     
+    const regularPay = regularHours * baseSaraly;
     const overtimePay = overtimeHours * baseSaraly * (overTimeRate / 100 + 1);
-    const bonusPay = baseSaraly * (bonusRate / 100);
-    const commissionPay = baseSaraly * (commissionRate / 100);
-    const performancePay = baseSaraly * (performanceMetrics / 100);
+    const bonusPay = regularPay * bonusRate;
+    const commissionPay = regularPay * commissionRate;
+    const performancePay = regularPay * performanceMetrics / 100;
     const leavePayment = calculateLeavePayment();
     
+    // Total bonuses = everything except regular pay
     return overtimePay + bonusPay + commissionPay + performancePay + leavePayment;
   };
 
@@ -221,22 +225,159 @@ export default function PayrollApproved({
   const netPay = calculateNetPay();
   const leavePayment = calculateLeavePayment();
 
+// Updated handlePayrollEmployee function for your component
   const handlePayrollEmployee = async () => {
-    if (!employee_schedule_id) return;
+    if (!employee_schedule_id || !employeeID) {
+      alert('Employee ID is required for payroll processing');
+      return;
+    }
+    
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
-    const approvedRows = await getApprovedAttendanceIDs(employee_schedule_id, managerID);
-    const leaveRows    = await getPayableLeaveIDs(employee_schedule_id, today);
-    const approvedIds = (approvedRows || []).map((r: { attendanceid: number }) => r.attendanceid);
-    const leaveIds    = leaveRows || []; 
+    try {
+      const approvedRows = await getApprovedAttendanceIDs(employee_schedule_id, managerID);
+      const leaveRows = await getPayableLeaveIDs(employee_schedule_id, today);
+      const approvedIds = (approvedRows || []).map((r: { attendanceid: number }) => r.attendanceid);
+      const leaveIds = leaveRows || []; 
+      const dataRange = await getAttendanceDateRange(approvedIds) ?? []
 
-    await markAttendancePaid(approvedIds);
-    await applyLeavePayments(employee_schedule_id, today)
+      const start_date_payroll = dataRange[0]?.start_date
+      const end_date_payroll = dataRange[0]?.end_date
 
-    alert("Payroll Are successfully")
+      // Prepare comprehensive payroll data
+      const payrollDetails = {
+        // Employee Information
+        employee_info: {
+          employeeID: employeeID,
+          employeeName: employeeName,
+          position: position,
+          department: department,
+          employee_schedule_id: employee_schedule_id,
+          managerID: managerID
+        },
+        
+        // Schedule Information
+        schedule_info: {
+          shift_start_time: shift_start_time,
+          shift_end_time: shift_end_time,
+          formatted_shift_start: formatTime(shift_start_time),
+          formatted_shift_end: formatTime(shift_end_time)
+        },
+        
+        // Time and Attendance
+        time_attendance: {
+          total_work_time: totalWorkTime,
+          total_overtime: totalOverTime,
+          formatted_work_time: formatWorkTime(totalWorkTime),
+          formatted_overtime: formatWorkTime(totalOverTime),
+          regular_hours: parseTimeToHours(totalWorkTime),
+          overtime_hours: parseTimeToHours(totalOverTime),
+          approved_attendance_ids: approvedIds,
+          payroll_period: {
+            start_date: start_date_payroll,
+            end_date: end_date_payroll
+          }
+        },
+        
+        // Leave Information
+        leave_info: {
+          total_leave_days_used: totalLeaveUsed,
+          leave_payment: calculateLeavePayment(),
+          payable_leave_ids: leaveIds
+        },
+        
+        // Compensation Rates
+        compensation_rates: {
+          base_salary: baseSaraly,
+          bonus_rate: bonusRate,
+          commission_rate: commissionRate,
+          overtime_rate: overTimeRate
+        },
+        
+        // Pay Calculations
+        pay_calculations: {
+          regular_pay: parseTimeToHours(totalWorkTime) * baseSaraly,
+          overtime_pay: parseTimeToHours(totalOverTime) * baseSaraly * (overTimeRate / 100 + 1),
+          bonus_pay: parseTimeToHours(totalWorkTime) * baseSaraly * bonusRate,
+          commission_pay: parseTimeToHours(totalWorkTime) * baseSaraly * commissionRate,
+          performance_pay: parseTimeToHours(totalWorkTime) * baseSaraly * performanceMetrics / 100,
+          leave_payment: calculateLeavePayment(),
+          gross_pay: calculateGrossPay(),
+          net_pay: calculateNetPay(),
+          total_bonuses: parseFloat(totalBonuses)
+        },
+        
+        // Deductions
+        deductions: {
+          taxes: {
+            name: taxesName,
+            amount: parseFloat(taxesAmount)
+          },
+          health_insurance: {
+            name: healthInsuranceName,
+            amount: parseFloat(healthInsuranceAmount)
+          },
+          social_security_amount: parseFloat(socialSecurityAmount),
+          retirement_amount: parseFloat(retirementAmount),
+          additional_benefits_amount: parseFloat(additionalBenefitsAmount),
+          voluntary_deduction: {
+            amount: parseFloat(voluntaryDeductionAmount),
+            description: voluntaryDeductionDescription
+          },
+          outstanding_loans: {
+            original_amount: parseFloat(outstandingLoansOriginal),
+            principal_repaid: parseFloat(outstandingLoansPrincipalRepaid),
+            interest_rate: parseFloat(outstandingLoansInterestRate)
+          },
+          advances_amount: parseFloat(advancesAmount),
+          total_deduction: parseFloat(totalDeduction)
+        },
+        
+        // Performance Information
+        performance: {
+          skills: skills,
+          performance_metrics: performanceMetrics,
+          performance_feedback: performanceFeedback,
+          goals: goals
+        },
+        
+        // Formatted Currency Values (for display purposes)
+        formatted_amounts: {
+          gross_pay: formatCurrency(calculateGrossPay()),
+          net_pay: formatCurrency(calculateNetPay()),
+          total_deductions: formatCurrency(parseFloat(totalDeduction)),
+          leave_payment: formatCurrency(calculateLeavePayment()),
+          total_bonuses: formatCurrency(parseFloat(totalBonuses))
+        },
+        
+        // Processing Information
+        processing_info: {
+          processed_date: today,
+          processed_timestamp: now.toISOString()
+        }
+      };
+
+      // Create the payroll record
+      const newPayrollID = await createPayroll({
+        employeeID: employeeID,
+        payrollDetails: payrollDetails
+      });
+
+      // // Mark attendance as paid and apply leave payments
+      await markAttendancePaid(approvedIds);
+      await applyLeavePayments(employee_schedule_id, today);
+
+      alert(`Payroll created successfully! Payroll ID: ${newPayrollID}`);
+      
+      // Optionally close the modal or refresh data
+      onClose();
+      
+    } catch (error) {
+      console.error('Error processing payroll:', error);
+      alert('Error processing payroll. Please try again.');
+    }
   };
-
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">

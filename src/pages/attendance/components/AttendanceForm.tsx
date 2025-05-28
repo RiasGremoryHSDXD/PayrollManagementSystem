@@ -395,7 +395,7 @@ export default function AttendanceForm() {
             </div>
 
             {/* Attendance history */}
-            <div className="attendance-history">
+            <div className="max-h-[50vh] md:max-h-[70vh] overflow-y-auto">
               <h2 className="text-md sm:text-lg font-semibold opacity-80 mb-2">
                 Attendance History
               </h2>

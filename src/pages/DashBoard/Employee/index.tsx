@@ -1,7 +1,7 @@
 import AsideNavProp, { View } from "../../../pages/DashBoard/Employee/components/NavigationBar";
 import DashBoardHeader from "../../../pages/DashBoard/Employee/components/DashBoardHeader";
 import AttendanceForm from "../../attendance/components/AttendanceForm";
-import PayrollPage from "../../Payroll/components/payroll";
+import PayrollPage from "../../Payroll/index";
 import LeaveForm from "../../Leaves/index";
 import { useEffect, useState } from "react";
 

@@ -4,7 +4,6 @@ export async function getCurrentLeaveDaysUsed(
   empSchedId: number,
   cutoffDate?: string     // e.g. '2025-05-27'; omit to use default = today
 ) {
-  // Supabase RPC parameters must exactly match the function signature
   const params: { emp_sched_id: number; cutoff_date?: string } = {
     emp_sched_id: empSchedId,
   };
@@ -18,5 +17,5 @@ export async function getCurrentLeaveDaysUsed(
     return null;
   }
 
-  return data as number;  // the function returns INT
+  return data as number;  
 }

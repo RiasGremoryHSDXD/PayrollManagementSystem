@@ -2,7 +2,6 @@ import AsideNavProp, { View } from '../../DashBoard/Manager/components/Navigatio
 import DashBoardHeader from '../../DashBoard/Manager/components/DashBoardHeader';
 import ApproveTimeOff from '../../ApproveTimeOff/index'
 import ApproveTimeSheet from '../../ApproveTimeSheet/index'
-import ResolveDiscrepancies from '../../ResolveDiscrepancies/index'
 import { useState } from "react";
 
 export default function index() {
@@ -14,8 +13,6 @@ export default function index() {
         return <ApproveTimeOff />;
       case "approveTimeSheet":
         return <ApproveTimeSheet />;
-      case "ResolveDiscrepancies":
-        return <ResolveDiscrepancies />;
       default:
         return null;
     }

@@ -1,12 +1,11 @@
 import "../css/NavigationBar.css";
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { Layers, Clock, FileCheck, LogOut as LogoutIcon } from "lucide-react"; // Lucide-React icons are inline SVG React components :contentReference[oaicite:0]{index=0}
+import { Layers, Clock, LogOut as LogoutIcon } from "lucide-react"; // Lucide-React icons are inline SVG React components :contentReference[oaicite:0]{index=0}
 
 export type View =
   | "approveTimeOff"
   | "approveTimeSheet"
-  | "ResolveDiscrepancies";
 
 interface AsideNavProp {
   activeView: View;
@@ -44,13 +43,6 @@ const AsideNav: FC<AsideNavProp> = ({ activeView, onChangeView }) => {
           >
             <Clock className="w-5 h-5 mr-3" />
             Time Sheet
-          </button>
-          <button
-            className={activeView === "ResolveDiscrepancies" ? "active" : ""}
-            onClick={() => onChangeView("ResolveDiscrepancies")}
-          >
-            <FileCheck className="w-5 h-5 mr-3" />
-            Discrepancy
           </button>
         </nav>
         <div className="logOut-btn-container">

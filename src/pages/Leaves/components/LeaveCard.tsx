@@ -6,7 +6,11 @@ type LeaveCardProps = {
 
 export default function LeaveCard({ leaveType, used, total }: LeaveCardProps) {
   const available = total - used;
-  const percentAvailable = (available / total) * 100;
+
+  // Compute percent, but never below 0% or above 100%, and avoid division by zero
+  const percentAvailable = total > 0
+    ? Math.max(0, Math.min((available / total) * 100, 100))
+    : 0;
 
   return (
     <div className="bg-white shadow rounded-xl p-4 sm:p-6 w-full max-w-xs sm:max-w-sm min-w-0">
@@ -17,14 +21,14 @@ export default function LeaveCard({ leaveType, used, total }: LeaveCardProps) {
       <div className="flex justify-between items-center mb-2">
         <span className="text-gray-500 text-sm sm:text-base">Available</span>
         <span className="text-blue-600 font-bold text-sm sm:text-base">
-          {available} days
+          {available >= 0 ? available : 0} days
         </span>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar container */}
       <div className="w-full bg-gray-200 rounded-full h-2 mb-4 overflow-hidden">
         <div
-          className="h-full bg-blue-500"
+          className="h-full bg-blue-500 transition-all"
           style={{ width: `${percentAvailable}%` }}
         />
       </div>

@@ -8,6 +8,7 @@ import { get_used_leave } from "./SupabaseFunction/GetUsedLeave";
 import { get_max_leave_day } from "./SupabaseFunction/GetTotalLeave";
 import { useEffect, useState } from "react";
 
+
 export default function index() {
   const [vacationUsedLeave, setVactionUseLeave] = useState<number>(0);
   const [vacationTotalLeave, setVacationTotalLeave] = useState<number>(0);
@@ -18,10 +19,12 @@ export default function index() {
   const [employeeScheID, setEmployeeID] = useState<number | null>(null);
   const { userEmail, userPassword } = useAuth();
 
+
   useEffect(() => {
     console.log(localStorage.getItem("username"));
     console.log(localStorage.getItem("password"));
   });
+
 
   useEffect(() => {
     employee_details(userEmail, userPassword)
@@ -29,8 +32,10 @@ export default function index() {
       .catch(console.error);
   }, [userEmail, userPassword]);
 
+
   useEffect(() => {
     if (employeeScheID === null) return;
+
 
     const fetchLeaves = () => {
       get_used_leave(employeeScheID, "Vacation")
@@ -43,6 +48,7 @@ export default function index() {
           console.error("Error fetching vacation leaves", err);
         });
 
+
       get_used_leave(employeeScheID, "Sick Leave")
         .then((result) => {
           if (Array.isArray(result) && result.length > 0) {
@@ -52,6 +58,7 @@ export default function index() {
         .catch((err) => {
           console.error("Error fetching sick leaves", err);
         });
+
 
       get_used_leave(employeeScheID, "Personal Leave")
         .then((result) => {
@@ -64,13 +71,16 @@ export default function index() {
         });
     };
 
+
     fetchLeaves();
     const intervalID = setInterval(fetchLeaves, 2000);
     return () => clearInterval(intervalID);
   }, [employeeScheID]);
 
+
   useEffect(() => {
     if (employeeScheID === null) return;
+
 
     const fetchTotalLeaves = () => {
       get_max_leave_day("Vacation").then((result) =>
@@ -84,17 +94,21 @@ export default function index() {
       );
     };
 
+
     fetchTotalLeaves();
+
 
     const intervalID = setInterval(fetchTotalLeaves, 2000);
     return () => clearInterval(intervalID);
   }, [employeeScheID]);
 
+
   return (
-    <div className="flex flex-col gap-4 lg:gap-12 xl:gap-20 flex-1 xl:px-[120px] bg-gray-100">
+    <div className="flex flex-col gap-4 min-h-screen xl:gap-8 px-4 xl:px-[100px] bg-gray-100">
       <NewRequest />
 
-      <div className="flex flex-col md:px-5 items-center lg:justify-center lg:flex-row gap-4 w-full justify-center">
+
+      <div className="flex flex-col md:flex-row justify-center items-center gap-4 w-full ">
         <Leave
           leaveType="Vacation"
           used={vacationUsedLeave}
@@ -108,7 +122,11 @@ export default function index() {
         />
       </div>
 
+
       <RequestHistory />
     </div>
   );
 }
+
+
+
