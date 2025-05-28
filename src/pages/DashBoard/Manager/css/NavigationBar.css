@@ -1,33 +1,41 @@
 @import "tailwindcss";
 
+
 @layer components {
   aside {
     @apply w-[60vw] md:w-[15vw] hidden xl:flex flex-col bg-white border-r border-gray-400 h-[100vh];
   }
 
+
   .heading-container {
     @apply p-7.5 border-b border-gray-400;
   }
+
 
   .navigation {
     @apply flex flex-col flex-1 justify-between;
   }
 
-  nav {
+
+  .nav-manager {
     @apply p-4;
   }
 
-  nav button {
-    @apply flex items-center space-x-3 w-full p-2.5 rounded text-left hover:bg-gray-100 hover:text-purple-500;
+
+  .nav-manager button {
+    @apply flex items-center space-x-3 w-full p-2.5 rounded-xl text-left hover:bg-gray-100 hover:text-purple-500;
   }
+
 
   .logOut-btn-container {
     @apply p-4 border-t border-gray-400;
   }
 
+
   .logOut-btn {
     @apply flex items-center space-x-3 text-gray-600 hover:text-red-600 w-full p-2.5 border-none;
   }
+
 
   .active {
     @apply bg-gray-100 text-purple-500;
