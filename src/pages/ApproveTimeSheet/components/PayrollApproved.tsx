@@ -25,6 +25,8 @@ import { getAttendanceDateRange } from "../SupabaseFunction/AttendanceDataRange"
 import { markAttendancePaid } from "../SupabaseFunction/MarkAttendancePaid";
 import { applyLeavePayments } from "../SupabaseFunction/ApplyLeavePayment";
 import { createPayroll } from "../SupabaseFunction/InsertJson";
+import { upDateAdvanceBySchedule } from "../SupabaseFunction/UpdateAdvances";
+import { updateLoadBySchedule } from "../SupabaseFunction/UpdateLoans";
 
 interface PayrollApprovedProps {
   employeeID: number | null;
@@ -80,6 +82,8 @@ export default function PayrollApproved({
   const [goals, setGoals] = useState<string>('');
   const [totalBonuses, setTotalBonuses] = useState<string>('0');
   const [totalLeaveUsed, setTotalLeave] = useState<number>(0)
+  const [invalidPayroll, setInvalidPayroll] = useState<boolean>(false)
+  const [payrollApprovedModal, setPayrollApprovedModal] = useState<boolean>(false)
   
 const formatCurrency = (amount: number | string) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
@@ -200,18 +204,17 @@ const formatCurrency = (amount: number | string) => {
     handleLeaveData()
   }, [])
 
-    const handleLeaveData = async () => {
-    if (employee_schedule_id) {
-      const now = new Date();
-      const year  = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day   = String(now.getDate()).padStart(2, '0');
+  const handleLeaveData = async () => {
+  if (employee_schedule_id) {
+    const now = new Date();
+    const year  = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day   = String(now.getDate()).padStart(2, '0');
 
-      const today = `${year}-${month}-${day}`;
-      const leaveDaysUsed = await getCurrentLeaveDaysUsed(employee_schedule_id, today);
-      setTotalLeave(leaveDaysUsed || 0);
-    }
-  };
+    const today = `${year}-${month}-${day}`;
+    const leaveDaysUsed = await getCurrentLeaveDaysUsed(employee_schedule_id, today);
+    setTotalLeave(leaveDaysUsed || 0);
+  }};
 
   // Calculate total bonuses when relevant data changes
   useEffect(() => {
@@ -358,20 +361,22 @@ const formatCurrency = (amount: number | string) => {
         }
       };
 
-      // Create the payroll record
-      const newPayrollID = await createPayroll({
-        employeeID: employeeID,
-        payrollDetails: payrollDetails
-      });
-
-      // // Mark attendance as paid and apply leave payments
-      await markAttendancePaid(approvedIds);
-      await applyLeavePayments(employee_schedule_id, today);
-
-      alert(`Payroll created successfully! Payroll ID: ${newPayrollID}`);
       
+      if(netPay < 0)
+      {
+        setInvalidPayroll(true)
+      }
+      else
+      {
+        await createPayroll({ employeeID: employeeID, payrollDetails: payrollDetails});
+        await upDateAdvanceBySchedule(employee_schedule_id, parseFloat(advancesAmount))
+        await updateLoadBySchedule(employee_schedule_id, parseFloat(outstandingLoansOriginal) - parseFloat(outstandingLoansPrincipalRepaid))
+        await markAttendancePaid(approvedIds);
+        await applyLeavePayments(employee_schedule_id, today);
+
+        setPayrollApprovedModal(true)
+      }
       // Optionally close the modal or refresh data
-      onClose();
       
     } catch (error) {
       console.error('Error processing payroll:', error);
@@ -381,7 +386,76 @@ const formatCurrency = (amount: number | string) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+      {invalidPayroll && (
+      /* backdrop + centering */
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md">
+        {/* modal window */}
+        <div className="bg-gradient-to-br from-red-50 to-rose-100 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center border border-red-200">
+          {/* Error Icon */}
+          <div className="mx-auto w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mb-6 shadow-lg">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          
+          {/* Title */}
+          <h1 className="text-3xl font-bold mb-3 text-red-800">
+            Invalid Payroll!
+          </h1>
+          
+          {/* Error Message */}
+          <p className="text-red-700 mb-8 text-lg leading-relaxed">
+            Net pay must not be less than zero. Please review deductions and try again.
+          </p>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => setInvalidPayroll(false)}
+              className="px-6 py-3 bg-white text-red-600 font-semibold rounded-lg border-2 border-red-600 hover:bg-red-50 transition-all duration-200 shadow-md hover:shadow-lg"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {payrollApprovedModal && (
+    /* backdrop + centering */
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md">
+      {/* modal window */}
+      <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center border border-green-200">
+        {/* Success Icon */}
+        <div className="mx-auto w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-6 shadow-lg">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        
+        {/* Title */}
+        <h1 className="text-3xl font-bold mb-3 text-green-800">
+          Payroll Approved!
+        </h1>
+        
+        {/* Success Message */}
+        <p className="text-green-700 mb-8 text-lg leading-relaxed">
+          The payroll has been successfully processed and approved.
+        </p>
+        
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => onClose()}
+            className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
           <div className="text-center">
@@ -702,6 +776,28 @@ const formatCurrency = (amount: number | string) => {
                   </p>
                 </div>
               )}
+
+              {additionalBenefitsAmount !== "0" && (
+                <div className="bg-white rounded-lg p-4 border border-red-200">
+                  <p className="text-sm font-medium text-gray-600 mb-1">
+                    Additional Benifits
+                  </p>
+                  <p className="text-lg font-bold text-red-600">
+                    {formatCurrency(additionalBenefitsAmount)}
+                  </p>
+                </div>
+              )}
+
+              {(parseInt(outstandingLoansOriginal, 10) - parseInt(outstandingLoansPrincipalRepaid, 10)) !== 0 && (
+                <div className="bg-white rounded-lg p-4 border border-red-200">
+                  <p className="text-sm font-medium text-gray-600 mb-1">
+                    Outstanding Loan
+                  </p>
+                  <p className="text-lg font-bold text-red-600">
+                    {formatCurrency(parseInt(outstandingLoansOriginal, 10) - parseInt(outstandingLoansPrincipalRepaid, 10))}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -780,5 +876,6 @@ const formatCurrency = (amount: number | string) => {
         </div>
       </div>
     </div>
+    
   );
 }

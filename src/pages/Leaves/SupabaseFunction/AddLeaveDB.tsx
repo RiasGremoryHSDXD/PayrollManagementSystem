@@ -3,7 +3,6 @@ import supabase from "../../../config/SupabaseClient";
 export async function insertLeaveWithDetails(
   p_startdate: string,
   p_enddate: string,
-  p_daysrequested: number,
   p_reason: string,
   p_status: string,
   p_approvedby: number,
@@ -16,7 +15,6 @@ export async function insertLeaveWithDetails(
 
     p_startdate,
     p_enddate,
-    p_daysrequested,
     p_reason,
     p_status,
     p_approvedby,

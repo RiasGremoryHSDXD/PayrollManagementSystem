@@ -56,15 +56,6 @@ export default function RequestForm() {
     return end >= start;
   };
 
-  const getDaysBetween = () => {
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
-    start.setHours(0,0,0,0);
-    end.setHours(0,0,0,0);
-    const diffMs = end.getTime() - start.getTime();
-    return Math.floor(diffMs / (1000*60*60*24)) + 1;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStartDateError(false);
@@ -84,12 +75,10 @@ export default function RequestForm() {
       return;
     }
 
-    const days = getDaysBetween();
     try {
       await insertLeaveWithDetails(
         formData.startDate,
         formData.endDate,
-        days,
         formData.reason,
         'Pending',
         employeeInfo.managerid,

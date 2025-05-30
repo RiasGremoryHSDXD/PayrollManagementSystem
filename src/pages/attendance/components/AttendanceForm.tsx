@@ -401,10 +401,6 @@ export default function AttendanceForm() {
               </h2>
 
               <div
-                className="table-history-container overflow-y-auto"
-                style={{
-                  maxHeight: "calc(68vh - 250px)",
-                }}
               >
                 <table className="table-history min-w-full table-auto">
                   <thead className="sticky top-0 bg-gray-100 z-10 shadow-sm">

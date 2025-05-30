@@ -4,6 +4,7 @@ import { useAuth } from "../../../../auth/AuthContext";
 import { employee_details } from "../../../Leaves/SupabaseFunction/EmployeeDetails";
 import { useNavigate } from "react-router-dom";
 import "remixicon/fonts/remixicon.css";
+import { User } from "lucide-react";
 
 
 type View = "attendance" | "payroll" | "leave";
@@ -91,7 +92,7 @@ export default function DashBoardHeader({
 
           <div className="dashboard-right">
             <div>
-              <img src="/person_icon.svg" alt="person_icon" />
+              <User className="w-8 h-8 text-gray-700" />
             </div>
             <div className="profile-name">
               <p className="text-[clamp(0.75rem,2vw,1rem)] font-medium text-gray-700">
