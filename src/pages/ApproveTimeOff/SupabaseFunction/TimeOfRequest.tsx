@@ -6,7 +6,7 @@ export async function time_off_approval(manager_id: number) {
   });
 
   if (error) {
-    console.error("RPC error:", error);
+    console.error("RPC errors:", error);
     return null;
   }
 
