@@ -6,7 +6,7 @@ import ApprovedTimeOff from "./components/ApprovedTimeOff";
 export type LeaveRequest = {
   first_name: string;
   last_name: string;
-  start_date: string; // ISO date
+  start_date: string; // ISO dateqq
   end_date: string; // ISO date
   day_requested: string; // ISO timestamp
   leave_types: string;
